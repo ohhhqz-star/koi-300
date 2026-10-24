@@ -111,7 +111,7 @@ cd koi-300
 # or double-click start-windows.bat on Windows
 ```
 
-The browser opens `http://127.0.0.1:4877/`. Data is written to `data/portfolio.json` and backups to `data/backups/`. The server listens on the loopback interface only and stops when you close the terminal.
+The browser opens `http://127.0.0.1:4877/`. Data is written to `data/portfolio.json` and backups to `data/backups/`. The server listens on the loopback interface only and stops when you close the terminal. This page is the app's Chinese UI; for the English demo use the GitHub Pages link above.
 
 ### 3. Browser only (GitHub Pages)
 
