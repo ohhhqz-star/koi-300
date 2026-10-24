@@ -399,7 +399,7 @@ enum WorkbookBuilder {
         var heights: [Int: Double] = [:]
 
         merges.append("A1:F1")
-        rows.append([.text("复盘 300 · 数据导出", .title)] + Array(repeating: .blank(.title), count: 5))
+        rows.append([.text("Koi 300 · 数据导出", .title)] + Array(repeating: .blank(.title), count: 5))
         heights[1] = 34
 
         let stamp = exportDateString()
@@ -504,7 +504,7 @@ enum WorkbookBuilder {
         let notes = [
             "金额单位：元；占总资产按当前总资产（含现金）计算，四舍五入可能有 ±0.1% 的误差。",
             "持仓成本与当前市值由用户在本地应用中维护；操作记录用于复盘，不自动回写持仓成本。",
-            "本文件由“复盘 300”本地应用导出，数据只保存在这台 Mac 上。"
+            "本文件由“Koi 300”本地应用导出，数据只保存在这台 Mac 上。"
         ]
         for note in notes {
             let row = rows.count + 1

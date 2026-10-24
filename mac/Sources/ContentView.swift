@@ -17,7 +17,7 @@ struct SidebarView: View {
                     }
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("复盘 300")
+                    Text("Koi 300")
                         .font(.system(size: 14.5, weight: .semibold))
                     Text("每天 3 分钟")
                         .font(.system(size: 10.5))
@@ -207,7 +207,7 @@ struct ContentView: View {
                 page
             }
         }
-        .navigationTitle("复盘 300")
+        .navigationTitle("Koi 300")
         .tint(Palette.accent)
         .accentColor(Palette.accent)
         .toolbarBackground(Palette.page, for: .windowToolbar)

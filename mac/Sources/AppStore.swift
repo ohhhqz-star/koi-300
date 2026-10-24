@@ -21,7 +21,11 @@ final class AppStore: ObservableObject {
     let dataURL: URL
 
     init(dataDirectory: URL? = nil, seedURL: URL? = nil) {
-        let directory = dataDirectory ?? Self.resolveDataDirectory()
+        let customDirectory = dataDirectory ?? Self.customDataDirectory()
+        let directory = customDirectory ?? Self.resolveDataDirectory()
+        if customDirectory == nil {
+            Self.migrateLegacyDataIfNeeded(to: directory)
+        }
         self.dataDirectory = directory
         self.dataURL = directory.appendingPathComponent("data.json")
         self.backupsDirectory = directory.appendingPathComponent("Backups")
@@ -62,17 +66,43 @@ final class AppStore: ObservableObject {
         }
     }
 
-    static func resolveDataDirectory() -> URL {
-        if let args = ProcessInfo.processInfo.arguments.firstIndex(of: "--data-dir"),
-           args + 1 < ProcessInfo.processInfo.arguments.count {
-            return URL(fileURLWithPath: ProcessInfo.processInfo.arguments[args + 1], isDirectory: true)
+    static func customDataDirectory() -> URL? {
+        if let index = ProcessInfo.processInfo.arguments.firstIndex(of: "--data-dir"),
+           index + 1 < ProcessInfo.processInfo.arguments.count {
+            return URL(fileURLWithPath: ProcessInfo.processInfo.arguments[index + 1], isDirectory: true)
         }
         if let custom = ProcessInfo.processInfo.environment["REVIEW_DATA_DIR"], !custom.isEmpty {
             return URL(fileURLWithPath: custom, isDirectory: true)
         }
-        let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
+        return nil
+    }
+
+    static func resolveDataDirectory() -> URL {
+        customDataDirectory() ?? applicationSupportBase().appendingPathComponent("Koi 300", isDirectory: true)
+    }
+
+    static func applicationSupportBase() -> URL {
+        FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
             ?? FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Application Support")
-        return base.appendingPathComponent("复盘 300", isDirectory: true)
+    }
+
+    static func migrateLegacyDataIfNeeded(to directory: URL) {
+        let fm = FileManager.default
+        guard !fm.fileExists(atPath: directory.appendingPathComponent("data.json").path) else { return }
+        let base = applicationSupportBase()
+        for legacyName in ["复盘 300", "投资复盘", "fupan-300"] {
+            let legacy = base.appendingPathComponent(legacyName, isDirectory: true)
+            guard legacy.standardizedFileURL != directory.standardizedFileURL,
+                  let entries = try? fm.contentsOfDirectory(at: legacy, includingPropertiesForKeys: nil),
+                  entries.contains(where: { $0.lastPathComponent == "data.json" }) else { continue }
+            try? fm.createDirectory(at: directory, withIntermediateDirectories: true)
+            for entry in entries {
+                let target = directory.appendingPathComponent(entry.lastPathComponent)
+                guard !fm.fileExists(atPath: target.path) else { continue }
+                try? fm.copyItem(at: entry, to: target)
+            }
+            return
+        }
     }
 
     static func decode(_ raw: Data) throws -> AppData {

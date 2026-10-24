@@ -70,6 +70,9 @@ jobs:
     permissions:
       contents: write
     steps:
+      - name: Resolve version
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
@@ -86,17 +89,22 @@ jobs:
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
-          name: 复盘 300 ${{ github.ref_name }}
+          name: Koi 300 ${{ github.ref_name }}
           body: |
-            复盘 300 · 本地优先的投资复盘。
+            Koi 300 — a local-first investment review journal.
+            Write 300 entries before you buy. Style isn't imagined. It's recorded.
 
-            - macOS：`Fupan300-macOS-1.2.0-universal.zip`，通用二进制，支持 Apple Silicon 与 Intel。
-            - Windows：`Fupan300-Setup-1.2.0.exe`，传统安装包，默认安装到当前用户目录。
+            - macOS: `Koi300-macOS-${{ env.VERSION }}-universal.zip` — universal binary for Apple Silicon and Intel.
+            - Windows: `Koi300-Setup-${{ env.VERSION }}.exe` — per-user NSIS installer, no admin rights needed.
+            - `SHA256SUMS.txt` — checksums for both files.
 
-            macOS 首次打开：右键 App → 打开；若仍被拦截，可在终端执行
-            `xattr -dr com.apple.quarantine "/Applications/复盘 300.app"`。
+            First launch on macOS: right-click the app → Open; if macOS still blocks it, run
+            `xattr -dr com.apple.quarantine "/Applications/Koi 300.app"`.
 
-            数据只保存在本机。详细说明见仓库 README 与 docs/DATA.md。
+            The desktop app UI is currently in Chinese; the browser demo at
+            https://ohhhqz-star.github.io/koi-300/ is in English.
+
+            All data stays on your machine. See the README and docs/DATA.md for details.
           files: |
             artifacts/release/*.zip
             artifacts/release/*.exe

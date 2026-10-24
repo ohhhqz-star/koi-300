@@ -50,11 +50,11 @@ enum ExportRequest {
 
     func defaultName(date: String) -> String {
         switch self {
-        case .excel: return "复盘300_\(date).xlsx"
-        case .holdingsCSV: return "复盘300_当前持仓_\(date).csv"
-        case .tradesCSV: return "复盘300_操作记录_\(date).csv"
-        case .reviewsCSV: return "复盘300_每日复盘_\(date).csv"
-        case .backupJSON: return "复盘300_完整备份_\(date).json"
+        case .excel: return "Koi300_\(date).xlsx"
+        case .holdingsCSV: return "Koi300_当前持仓_\(date).csv"
+        case .tradesCSV: return "Koi300_操作记录_\(date).csv"
+        case .reviewsCSV: return "Koi300_每日复盘_\(date).csv"
+        case .backupJSON: return "Koi300_完整备份_\(date).json"
         }
     }
 }

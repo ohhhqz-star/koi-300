@@ -9,8 +9,9 @@ const { exec } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..');
 const WEB_DIR = path.join(ROOT, 'web');
-const DEFAULT_DATA_DIR = process.env.FUPAN_DATA_DIR
-  ? path.resolve(process.env.FUPAN_DATA_DIR)
+const CUSTOM_DATA_DIR = process.env.KOI_DATA_DIR || process.env.FUPAN_DATA_DIR;
+const DEFAULT_DATA_DIR = CUSTOM_DATA_DIR
+  ? path.resolve(CUSTOM_DATA_DIR)
   : path.join(ROOT, 'data');
 const HOST = '127.0.0.1';
 const MAX_BODY = 8 * 1024 * 1024;
@@ -100,7 +101,7 @@ function createApi({ dataDir }) {
       parsed = null;
     }
     return {
-      app: 'fupan-300',
+      app: 'koi-300',
       mode: 'local-file',
       dataFile,
       dataDir,
@@ -161,7 +162,7 @@ function createApi({ dataDir }) {
   }
 
   void ensureDataFile().catch((error) => {
-    console.error('[fupan-300] 无法初始化数据文件：', error.message);
+    console.error('[koi-300] 无法初始化数据文件：', error.message);
   });
 
   return {
@@ -352,7 +353,7 @@ function startServer(options = {}) {
       const port = typeof address === 'object' && address ? address.port : 0;
       const url = `http://${HOST}:${port}/`;
       console.log('');
-      console.log('  复盘 300 · 本地文件模式');
+      console.log('  Koi 300 · 本地文件模式');
       console.log(`  打开：${url}`);
       console.log(`  数据：${api.dataFile}`);
       console.log('  只监听 127.0.0.1，关闭窗口或按 Ctrl+C 停止。');

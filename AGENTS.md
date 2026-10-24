@@ -1,79 +1,83 @@
 # AGENTS.md
 
-给在这个仓库里工作的 AI agent 与贡献者的项目约束。产品面向中文用户，默认所有界面文案、文档与提交说明使用中文（代码标识符用英文）。
+Project constraints for AI agents and contributors working in this repository.
 
-## 先读
+**Language policy**: public content (README, docs, release notes, the GitHub Pages demo in `site/`) is English. The desktop app UI in `web/` and `mac/` is Chinese and should stay Chinese. Code identifiers and commit subjects are English.
 
-- 产品说明：`README.md`
-- 数据字段与本地 API：`docs/DATA.md`
-- 隐私边界：`PRIVACY.md`
+## Read first
 
-## 项目结构
+- Product overview: `README.md`
+- Data fields and local API: `docs/DATA.md`
+- Privacy boundaries: `PRIVACY.md`
+
+## Structure
 
 ```text
-web/             静态 Web 应用。index.html + assets/{styles.css,app.js,logo.svg}
-server/          仅 Node 内置模块的本地文件服务与 JSON API
-mac/             原生 SwiftUI 源码、Info.plist、空 SeedData、build.sh
-desktop/         Electron 壳；启动 server 并加载 web；electron-builder NSIS
-docs/            数据格式与虚构截图
-.github/         Pages 与双平台 Release workflow
+site/            English static demo deployed to GitHub Pages
+web/             Static app UI bundled into the desktop apps (Chinese)
+server/          Local file server + JSON API, Node built-ins only
+mac/             Native SwiftUI source, Info.plist, empty SeedData, build.sh
+desktop/         Electron shell; starts server, loads web; electron-builder NSIS
+docs/            Data format and fictional screenshots
+.github/         Pages and dual-platform release workflows
 ```
 
-三个前端共享同一套 `AppData` JSON。不要把 macOS / Windows / Web 的字段名改得不兼容。
+`site/` and `web/` share the same UI behaviour and data schema but have separate copy. When changing behaviour, update both; when changing public copy, update `site/` (and keep `web/` Chinese). All front ends share one `AppData` JSON. Never make field names incompatible across macOS, Windows and web.
 
-## 常用命令
+## Common commands
 
 ```bash
-# 语法检查（改动 web 或 server 后必做）
+# Syntax check (required after touching either front end or the server)
+node --check site/assets/app.js
 node --check web/assets/app.js
 node --check server/server.js
 
-# 本地文件模式，数据写到 data/
+# Local-file mode; data goes to data/
 node server/server.js --no-open
 
-# API 冒烟
+# API smoke test
 curl http://127.0.0.1:4877/api/status
 curl http://127.0.0.1:4877/api/data
 
-# macOS 原生构建（需要 macOS 14+ 与 CLT）
+# Native macOS build (macOS 14+ and CLT required)
 cd mac && ./build.sh
 
-# Windows 安装包（通常只在 Windows / CI 构建）
+# Windows installer (normally built on Windows or CI)
 cd desktop && npm ci && npm run dist
 ```
 
-## 不可妥协的约束
+## Non-negotiable constraints
 
-1. **本地优先**：不添加云端同步、账号、遥测、广告、CDN、第三方字体、行情接口或任何外部网络请求。CSP 与 UI 都维持离线可用。
-2. **不把真实数据带进仓库**：示例、截图、测试数据必须是虚构的。不要提交 `data/`、备份、真实账户名、真实代码或真实金额。
-3. **不伪造名人名言**：300 是项目自定的练习量。文案必须说明「不是名人名言 / 不是收益承诺」。不要编造某位投资人说过这句话。
-4. **A 股颜色语义**：红涨绿跌（`--gain` 红，`--loss` 绿）。不要按欧美习惯反过来。
-5. **300 计数** = `trades.length + reviews.length`。交易与复盘都计入；其它记录不计入。
-6. **五套主题**：暖米、淡粉、淡蓝、纯白、黑夜。新增颜色必须同时改 Web CSS 变量、原生 `Theme.swift` 和文档，不要只改一端。
-7. **日期与时间戳**：日期 `YYYY-MM-DD`；时间 ISO 8601 且不带毫秒（Swift `.iso8601` 解码要求）。UUID 在编辑中保持不变。
-8. **数据兼容**：`schemaVersion` 保持 `1`。新增字段要有默认值、能向后兼容，并同步更新 `docs/DATA.md`。不要重命名已有字段。
-9. **本地服务安全**：只监听 `127.0.0.1`；保留 Host / Origin 校验、同源限制、无 CORS、请求体上限和原子写入。不要为了调试放开这些限制。
-10. **不破坏用户数据**：任何覆盖、导入、清除操作前都先备份；不要把 `--no-verify` 之类绕过检查的做法当作解决方案。
+1. **Local-first**: no cloud sync, accounts, telemetry, ads, CDNs, third-party fonts, quote APIs or any outbound request. CSP and the UI must keep working offline.
+2. **No real data in the repo**: samples, screenshots and test data must be fictional. Never commit `data/`, backups, real account names, real tickers or real amounts.
+3. **Never invent quotations**: 300 is a practice quota this project set itself. Copy must say it is not a famous quotation and not a return promise. Do not attribute it to any investor.
+4. **A-share colour semantics**: red for gains, green for losses (`--gain` red, `--loss` green). Do not flip to the Western convention.
+5. **300 count** = `trades.length + reviews.length`. Trades and reviews count; other records do not.
+6. **Five themes**: warm rice, blush, mist, snow, night. Adding a colour means updating the web CSS variables, the native `Theme.swift` and the docs together.
+7. **Dates and timestamps**: dates `YYYY-MM-DD`; timestamps ISO 8601 without milliseconds (required by Swift `.iso8601`). UUIDs stay stable across edits.
+8. **Data compatibility**: keep `schemaVersion` at `1`. New fields need defaults, backward compatibility and an update to `docs/DATA.md`. Do not rename existing fields. Enum values exist in Chinese and English; both apps normalise them on import, so keep the alias tables in sync.
+9. **Local server security**: bind to `127.0.0.1` only; keep Host/Origin checks, same-origin restrictions, no CORS, the request body limit and atomic writes. Do not relax these for debugging.
+10. **Never destroy user data**: back up before any overwrite, import or clear; bypassing checks (e.g. `--no-verify`) is not a fix.
 
-## 改动时的检查清单
+## Checklist when changing things
 
-- 改 Web：`node --check`；启动本地服务，用浏览器走一遍五套主题、六个页面、弹窗、导入/导出与 300 计数。
-- 改 server：用 `curl` 验证 `GET /api/status`、`GET/PUT /api/data`、`POST /api/backup`；确认错误路径不会写坏 JSON。
-- 改数据层：确认 macOS 原生应用能导入 Web 导出的 JSON，反之亦然；时间戳不带毫秒。
-- 改原生：`cd mac && ./build.sh` 必须成功；用 `--data-dir /tmp/...` 启动，避免碰到本机真实数据。
-- 改 Windows 封装：本地可 `npm run pack` 验证目录产物；正式 `.exe` 交给 GitHub Actions 的 Windows runner。
-- 发版前：搜索仓库确认没有真实个人财务数据；检查 `web` 的静态请求全部为同源；更新版本号与 README。
+- Web/site: `node --check` both app files; run the local server or static host and walk through five themes, six pages, modals, import/export and the 300 count in a browser. Check 390px width for overflow.
+- Server: verify `GET /api/status`, `GET/PUT /api/data`, `POST /api/backup` with `curl`; confirm error paths do not corrupt the JSON.
+- Data layer: confirm the macOS app can import JSON exported by the web app and vice versa; timestamps carry no milliseconds.
+- Native: `cd mac && ./build.sh` must succeed; launch with `--data-dir /tmp/...` so you never touch real local data.
+- Desktop shell: `npm run pack` to validate the packaged directory; leave the signed `.exe` to the Windows CI runner.
+- Before publishing: search the repo for real personal financial data; confirm every static request in `site/` is same-origin; bump versions and update the README.
 
-## 设计基线
+## Design baseline
 
-- 极简、克制，留白优先；纸色背景、低饱和强调色、少量剪影（锦鲤）。
-- 中文字体使用系统字体；不要引入 Web Font。
-- 文案少用感叹号，不用收益暗示；强调记录、事实与下一步。
-- 空状态要给出一个明确动作，而不是只显示 0。
+- Minimal and restrained; whitespace first. Paper tones, low-saturation accents, one silhouette motif (the koi).
+- Chinese UI uses system fonts; never add a web font.
+- Copy avoids exclamation marks and return hints; emphasise records, facts and the next step.
+- Empty states name one clear action instead of just showing zero.
 
-## Git 与发布
+## Git and releases
 
-- 主分支 `main`。
-- 版本标签使用 `vX.Y.Z`，推送后 `.github/workflows/release.yml` 会构建 macOS 通用包与 Windows NSIS 安装包，并创建 Release。
-- Pages 部署来自 `web/`，由 `.github/workflows/pages.yml` 负责。
-- 私有数据目录、构建产物、`node_modules` 已在 `.gitignore` 中，不要强行提交。
+- Default branch `main`.
+- Tags use `vX.Y.Z`; pushing one triggers `.github/workflows/release.yml`, which builds the macOS universal zip and the Windows NSIS installer and creates a GitHub Release with English notes.
+- GitHub Pages deploys `site/` via `.github/workflows/pages.yml`.
+- Private data folders, build outputs and `node_modules` are in `.gitignore`; do not force-add them.

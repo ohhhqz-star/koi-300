@@ -21,8 +21,8 @@
     { id: 'night', label: '黑夜', page: '#0F1315', accent: '#9DC9C1' }
   ];
   const CHART_COLORS = ['#2C5D57', '#B08D50', '#5B7C99', '#8C6B8E', '#B06A4F', '#7E8B76', '#D3B38C'];
-  const LS_DATA = 'fupan300.data.v1';
-  const LS_THEME = 'fupan300.theme';
+  const LS_DATA = 'koi300.data.v1';
+  const LS_THEME = 'koi300.theme';
   const GOAL = 300;
   const WEEKDAYS = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
 
@@ -187,8 +187,25 @@
     return Number.isFinite(number) ? number : null;
   }
 
+  // 接受英文演示站导出的枚举值，导入后统一为中文枚举，避免被回退成默认值。
+  const ENUM_ALIASES = {
+    'Fund (OTC)': '场外基金', 'Fund (ETF)': '场内基金', 'Stock': '股票',
+    'Pension': '养老金', 'Gold': '黄金', 'Cash': '现金',
+    'Buy': '买入', 'Sell': '卖出', 'DCA': '定投', 'Switch': '转换', 'Dividend': '分红',
+    'Monthly': '每月', 'Weekly': '每周', 'Daily': '每日', 'Every trading day': '每交易日', 'One-off': '一次性',
+    'Active': '进行中', 'Paused': '已暂停', 'Cash pool': '资金归集', 'Finished': '已结束',
+    'Manual': '手工填写', 'From screenshot': '截图录入', 'Broker screenshot': '券商截图',
+    'Estimate': '估算', 'Needs update': '待更新',
+    'Not reviewed': '待复盘', 'Yes': '是', 'No': '否', 'Partly': '部分按计划'
+  };
+
+  function alias(value) {
+    return ENUM_ALIASES[value] || value;
+  }
+
   function oneOf(value, list, fallback) {
-    return list.includes(value) ? value : fallback;
+    const normalized = alias(value);
+    return list.includes(normalized) ? normalized : fallback;
   }
 
   function normalizeData(raw) {
@@ -234,7 +251,7 @@
       mood: String(item.mood || ''),
       market: String(item.market || ''),
       review: String(item.review || ''),
-      followedPlan: String(item.followedPlan || '待复盘'),
+      followedPlan: String(alias(item.followedPlan) || '待复盘'),
       lesson: String(item.lesson || ''),
       createdAt: String(item.createdAt || isoNow())
     }));
@@ -431,6 +448,19 @@
     try { localStorage.setItem(LS_THEME, theme); } catch { /* file:// may deny storage */ }
   }
 
+  function migrateLegacyStorage() {
+    try {
+      if (!localStorage.getItem(LS_DATA)) {
+        const legacyData = localStorage.getItem('fupan300.data.v1');
+        if (legacyData) localStorage.setItem(LS_DATA, legacyData);
+      }
+      if (!localStorage.getItem(LS_THEME)) {
+        const legacyTheme = localStorage.getItem('fupan300.theme');
+        if (legacyTheme) localStorage.setItem(LS_THEME, legacyTheme);
+      }
+    } catch { /* file:// may deny storage */ }
+  }
+
   function loadLocalData() {
     let raw;
     try { raw = localStorage.getItem(LS_DATA); } catch {
@@ -441,7 +471,7 @@
     try {
       return normalizeData(JSON.parse(raw));
     } catch (error) {
-      try { localStorage.setItem(`fupan300.corrupt.${Date.now()}`, raw); } catch { /* ignore */ }
+      try { localStorage.setItem(`koi300.corrupt.${Date.now()}`, raw); } catch { /* ignore */ }
       toast('本地数据无法读取', '已载入空数据，原始内容保留在浏览器中，可尝试导入备份。', 'error');
       return emptyData();
     }
@@ -502,7 +532,7 @@
       if (!response.ok) return false;
       if (!(response.headers.get('content-type') || '').includes('application/json')) return false;
       const status = await response.json();
-      if (status.app !== 'fupan-300') return false;
+      if (status.app !== 'koi-300' && status.app !== 'fupan-300') return false;
       state.mode = 'file';
       state.dataFile = status.dataFile || '';
       state.dataDir = status.dataDir || '';
@@ -525,7 +555,7 @@
       render();
       toast('已连接本地文件', '数据来自 data/portfolio.json，可由 agent 直接修改。');
     } else if (previous === 'browser') {
-      toast('未发现本地服务', '请用 start-mac.command 或 启动-Windows.bat 打开本地文件模式。', 'error');
+      toast('未发现本地服务', '请用 start-mac.command 或 start-windows.bat 打开本地文件模式。', 'error');
     }
   }
 
@@ -537,8 +567,7 @@
     if (persist) storeTheme(theme.id);
     const meta = document.querySelector('meta[name="theme-color"]');
     if (meta) meta.setAttribute('content', theme.page);
-    const name = $('[data-theme-name]');
-    if (name) name.textContent = theme.label;
+    $$('[data-theme-name]').forEach((node) => { node.textContent = theme.label; });
     $$('.theme-dot').forEach((dot) => {
       dot.classList.toggle('active', dot.dataset.themeChoice === theme.id);
     });
@@ -1398,10 +1427,10 @@
     const modeText = state.mode === 'file' ? '本地文件（可交给 agent）' : '浏览器本地存储';
     const storagePath = state.mode === 'file'
       ? state.dataFile
-      : 'localStorage · fupan300.data.v1';
+      : 'localStorage · koi300.data.v1';
     const agentPrompt = state.mode === 'file'
       ? `请先备份 ${state.dataFile}，再读取并修改我的投资复盘数据。\n保持 schemaVersion=1、字段名和 UUID 不变；日期用 YYYY-MM-DD。\n修改后写回同一路径，应用会在几秒内自动刷新。不要上传或提交到公开仓库。`
-      : '请先启动本地文件模式（start-mac.command 或 启动-Windows.bat），再读取 data/portfolio.json。修改前先备份，保持 schemaVersion=1 与字段名不变。不要上传或提交到公开仓库。';
+      : '请先启动本地文件模式（start-mac.command 或 start-windows.bat），再读取 data/portfolio.json。修改前先备份，保持 schemaVersion=1 与字段名不变。不要上传或提交到公开仓库。';
 
     const head = pageHead({
       title: '数据与导出',
@@ -1499,7 +1528,7 @@
             ${state.mode === 'browser' ? `
               <div class="divider"></div>
               <button class="btn btn-secondary sm" data-action="retry-file">连接本地文件模式</button>
-              <div class="hint" style="margin-top:9px">${icon('info')}<span>本地文件模式需要启动脚本：Mac 双击 <b>start-mac.command</b>，Windows 双击 <b>启动-Windows.bat</b>。</span></div>
+              <div class="hint" style="margin-top:9px">${icon('info')}<span>本地文件模式需要启动脚本：Mac 双击 <b>start-mac.command</b>，Windows 双击 <b>start-windows.bat</b>。</span></div>
             ` : `
               <div class="divider"></div>
               <button class="btn btn-secondary sm" data-action="reload-file">从文件重新读取</button>
@@ -2200,7 +2229,7 @@
   }
 
   function exportJSON(silent = false) {
-    download(`fupan300-备份-${fileStamp()}.json`, JSON.stringify(state.data, null, 2) + '\n', 'application/json');
+    download(`koi300-备份-${fileStamp()}.json`, JSON.stringify(state.data, null, 2) + '\n', 'application/json');
     if (!silent) toast('完整备份已导出', 'JSON 文件可在数据页重新导入。');
   }
 
@@ -2225,7 +2254,7 @@
         asset.note, asset.nextStep, asset.dataStatus, asset.updatedAt
       ];
     });
-    download(`fupan300-持仓-${fileStamp()}.csv`, csvFile([head, ...rows]), 'text/csv;charset=utf-8');
+    download(`koi300-持仓-${fileStamp()}.csv`, csvFile([head, ...rows]), 'text/csv;charset=utf-8');
     toast('持仓 CSV 已导出', `${rows.length} 条`);
   }
 
@@ -2236,7 +2265,7 @@
       trade.amount ?? '', trade.shares ?? '', trade.price ?? '', trade.fee ?? '', trade.realizedPnL ?? '',
       trade.reason, trade.mood, trade.market, trade.review, trade.followedPlan, trade.lesson, trade.createdAt
     ]);
-    download(`fupan300-交易-${fileStamp()}.csv`, csvFile([head, ...rows]), 'text/csv;charset=utf-8');
+    download(`koi300-交易-${fileStamp()}.csv`, csvFile([head, ...rows]), 'text/csv;charset=utf-8');
     toast('交易 CSV 已导出', `${rows.length} 笔`);
   }
 
@@ -2246,7 +2275,7 @@
       review.date, review.mood, review.trigger, review.operations, review.market,
       review.didRight, review.didWrong, review.nextPlan, review.createdAt, review.updatedAt
     ]);
-    download(`fupan300-复盘-${fileStamp()}.csv`, csvFile([head, ...rows]), 'text/csv;charset=utf-8');
+    download(`koi300-复盘-${fileStamp()}.csv`, csvFile([head, ...rows]), 'text/csv;charset=utf-8');
     toast('复盘 CSV 已导出', `${rows.length} 篇`);
   }
 
@@ -2256,7 +2285,7 @@
       plan.platform, plan.code, plan.name, plan.category, plan.frequency, plan.amount ?? '',
       plan.debitDay, plan.startDate, plan.status, plan.note, monthlyEstimate(plan).toFixed(2)
     ]);
-    download(`fupan300-定投计划-${fileStamp()}.csv`, csvFile([head, ...rows]), 'text/csv;charset=utf-8');
+    download(`koi300-定投计划-${fileStamp()}.csv`, csvFile([head, ...rows]), 'text/csv;charset=utf-8');
     toast('计划 CSV 已导出', `${rows.length} 个`);
   }
 
@@ -2623,7 +2652,7 @@
   function copyAgentPrompt() {
     const prompt = state.mode === 'file'
       ? `请先备份 ${state.dataFile}，再读取并修改我的投资复盘数据。保持 schemaVersion=1、字段名和 UUID 不变；日期用 YYYY-MM-DD。修改后写回同一路径，应用会在几秒内自动刷新。不要上传或提交到公开仓库。`
-      : '请先启动本地文件模式（start-mac.command 或 启动-Windows.bat），再读取 data/portfolio.json。修改前先备份，保持 schemaVersion=1 与字段名不变。不要上传或提交到公开仓库。';
+      : '请先启动本地文件模式（start-mac.command 或 start-windows.bat），再读取 data/portfolio.json。修改前先备份，保持 schemaVersion=1 与字段名不变。不要上传或提交到公开仓库。';
     copyText(prompt);
   }
 
@@ -2756,6 +2785,7 @@
   // ---------- boot ----------
 
   async function boot() {
+    migrateLegacyStorage();
     renderThemeDots();
     bindEvents();
     const fileMode = await tryFileMode();

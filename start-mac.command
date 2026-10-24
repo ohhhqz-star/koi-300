@@ -9,7 +9,7 @@ if ! command -v node >/dev/null 2>&1; then
   exit 1
 fi
 
-echo "正在启动复盘 300 本地文件模式…"
+echo "正在启动 Koi 300 本地文件模式…"
 echo "数据目录：$(pwd)/data"
 echo "关闭这个终端窗口即可停止服务。"
 echo

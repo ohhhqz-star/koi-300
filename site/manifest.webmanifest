@@ -1,0 +1,19 @@
+{
+  "name": "Koi 300 · Local investment journal",
+  "short_name": "Koi 300",
+  "description": "Write 300 entries before you buy. Everything stays on this device.",
+  "lang": "en",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F6F2EA",
+  "theme_color": "#2C5D57",
+  "icons": [
+    {
+      "src": "assets/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

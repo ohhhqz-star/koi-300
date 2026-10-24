@@ -271,7 +271,7 @@ struct DataView: View {
                     .background(Palette.accent.opacity(0.08))
                     .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("复盘 300 · 本地版 1.2")
+                    Text("Koi 300 · 本地版 1.2.1")
                         .font(.system(size: 12.5, weight: .semibold))
                     Text("没有账号、没有云端、不发起网络请求。数据保存在 Application Support，导出文件可以在 Excel 或 Numbers 中打开。")
                         .font(.system(size: 10.5))

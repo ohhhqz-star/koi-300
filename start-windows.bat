@@ -10,7 +10,7 @@ if errorlevel 1 (
   exit /b 1
 )
 
-echo 正在启动复盘 300 本地文件模式...
+echo 正在启动 Koi 300 本地文件模式...
 echo 数据目录：%cd%\data
 echo 关闭这个窗口即可停止服务。
 echo.

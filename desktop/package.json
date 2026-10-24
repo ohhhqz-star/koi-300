@@ -1,9 +1,9 @@
 {
-  "name": "fupan300-desktop",
-  "productName": "复盘 300",
-  "version": "1.2.0",
-  "description": "本地优先的投资复盘桌面应用：持仓、交易、每日复盘、定投计划与 300 记录。",
-  "author": "Fupan 300 contributors",
+  "name": "koi300-desktop",
+  "productName": "Koi 300",
+  "version": "1.2.1",
+  "description": "Local-first investment review journal: holdings, trades, daily reviews, DCA plans and the 300-entry practice.",
+  "author": "Koi 300 contributors",
   "license": "MIT",
   "private": true,
   "main": "main.js",
@@ -17,8 +17,8 @@
     "electron-builder": "^26.0.12"
   },
   "build": {
-    "appId": "com.fupan300.app",
-    "productName": "复盘 300",
+    "appId": "com.koi300.app",
+    "productName": "Koi 300",
     "asar": true,
     "directories": {
       "output": "dist"
@@ -47,7 +47,7 @@
         }
       ],
       "icon": "build/icon.ico",
-      "artifactName": "Fupan300-Setup-${version}.${ext}"
+      "artifactName": "Koi300-Setup-${version}.${ext}"
     },
     "nsis": {
       "oneClick": false,
@@ -56,7 +56,7 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "复盘 300",
+      "shortcutName": "Koi 300",
       "runAfterFinish": true,
       "deleteAppDataOnUninstall": false,
       "installerLanguages": ["zh_CN"],

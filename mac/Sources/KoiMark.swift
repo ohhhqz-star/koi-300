@@ -14,7 +14,7 @@ struct KoiMark: View {
             context.fill(circle(x: 381, y: 207, radius: 2.6), with: .color(bodyColor))
             context.fill(circle(x: 424, y: 104, radius: 24), with: .color(accentColor))
         }
-        .accessibilityLabel("复盘 300")
+        .accessibilityLabel("Koi 300")
     }
 
     private var bodyPath: Path {

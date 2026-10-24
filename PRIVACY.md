@@ -1,58 +1,58 @@
-# 隐私说明
+# Privacy
 
-更新日期：2026-10-24
+Last updated: 2026-10-24
 
-## 一句话
+## In one sentence
 
-复盘 300 不收集、不上传、不出售你的数据。没有账号系统，也没有云端同步。
+Koi 300 does not collect, upload or sell your data. There is no account system and no cloud sync.
 
-## 应用会接触什么
+## What the app touches
 
-### 桌面应用
+### Desktop apps
 
-- macOS：数据写入 `~/Library/Application Support/复盘 300/data.json`，备份写入同目录下的 `Backups/`。
-- Windows：数据写入 `%APPDATA%\复盘 300\data\portfolio.json`，备份写入 `data\backups\`。
-- 应用启动时会打开一个只监听 `127.0.0.1` 的本地页面；在 Windows 版本中，这个本地服务用于渲染界面与读写数据。
-- 不包含遥测、崩溃上报、使用统计、广告或第三方 SDK。
+- macOS: data is written to `~/Library/Application Support/Koi 300/data.json`, backups to `Backups/` in the same folder.
+- Windows: data is written to `%APPDATA%\Koi 300\data\portfolio.json`, backups to `data\backups\`.
+- On launch the app serves a local page bound to `127.0.0.1` only; on Windows this local server renders the UI and reads/writes the data.
+- No telemetry, crash reporting, usage analytics, ads or third-party SDKs.
 
-### 浏览器本地模式
+### Browser demo
 
-- 数据写入当前浏览器当前站点的 `localStorage`，键名是 `fupan300.data.v1`；主题偏好是 `fupan300.theme`。
-- 清理浏览器站点数据、更换浏览器或使用隐私模式，可能导致数据丢失。请定期导出 JSON。
-- GitHub Pages 只托管静态文件。访问页面时，GitHub 作为托管方可能记录常规访问日志（IP、User-Agent 等），这是托管服务的通用行为；应用本身不会把投资数据发送给 GitHub 或任何第三方。
+- Data is written to the current site's `localStorage` in the current browser, under the keys `koi300.data.v1` and `koi300.theme`.
+- Clearing site data, switching browsers or using private mode can lose your data. Export JSON regularly.
+- GitHub Pages only hosts static files. GitHub, as the host, may keep ordinary access logs (IP, User-Agent and similar); this is standard for any hosting service. The app itself never sends investment data to GitHub or anyone else.
 
-### 本地文件模式
+### Local-file mode
 
-- 数据写在项目目录的 `data/portfolio.json`，备份在 `data/backups/`。
-- 本地 HTTP 服务只绑定 `127.0.0.1`，并检查 `Host` 与 `Origin`，拒绝跨站 API 请求。
-- 如果你把端口转发、反向代理到公网，或让不可信程序访问本机，数据可能暴露。请不要这样做。
+- Data is written to `data/portfolio.json` in the project folder, backups to `data/backups/`.
+- The local HTTP server binds to `127.0.0.1` only, checks `Host` and `Origin`, and rejects cross-site API requests.
+- If you forward or reverse-proxy the port to the internet, or let untrusted programs reach your machine, the data may be exposed. Don't do that.
 
-## 应用不会做什么
+## What the app never does
 
-- 不向外部服务器发送持仓、交易、复盘或任何个人数据。
-- 不请求行情、汇率、新闻或字体 CDN。
-- 不要求登录、手机号、邮箱或实名信息。
-- 不包含自动更新检查（Release 需要手动下载）。
+- Sends holdings, trades, reviews or any personal data to an external server.
+- Requests quotes, exchange rates, news or font CDNs.
+- Requires login, a phone number, an email address or identity verification.
+- Checks for updates automatically (new releases must be downloaded manually).
 
-## 数据如何保护
+## How your data is protected
 
-- 本地数据是**明文 JSON**，应用不提供加密。
-- 本地文件模式的数据文件以 `0600` 权限创建（仅当前用户可读写），但备份文件和操作系统快照仍可能被其他具有本机权限的程序读取。
-- 安全主要依赖你的电脑登录密码、磁盘加密（FileVault / BitLocker）与文件权限。
-- 请定期在「数据与导出」页面导出 JSON，并保存到可信位置。
+- Local data is **plain JSON**; the app does not encrypt it.
+- In local-file mode the data file is created with `0600` permissions (current user only), but backups and OS snapshots may still be readable by other programs with local access.
+- Security depends mainly on your login password, disk encryption (FileVault / BitLocker) and file permissions.
+- Export JSON from the Data & export page regularly and store it somewhere you trust.
 
-## 删除数据
+## Deleting data
 
-- 应用内「数据与导出 → 清除本机数据」会删除当前数据并先导出一份备份。
-- macOS：退出应用后删除 `~/Library/Application Support/复盘 300/`。
-- Windows：退出应用后删除 `%APPDATA%\复盘 300\`。
-- 浏览器模式：在浏览器站点设置中清除该站点的数据。
-- 卸载应用不会自动删除数据，以免误删。
+- "Data & export → Clear local data" in the app removes the current data after exporting a backup first.
+- macOS: quit the app, then delete `~/Library/Application Support/Koi 300/`.
+- Windows: quit the app, then delete `%APPDATA%\Koi 300\`.
+- Browser demo: clear the site's data in your browser settings.
+- Uninstalling the app does not delete your data automatically, to avoid accidental loss.
 
-## 公开仓库
+## Public repository
 
-本仓库的示例数据、截图和文档全部使用虚构内容。不要把你自己的 `data/portfolio.json`、备份、真实截图或导出的 CSV 提交到公开仓库，也不要粘贴到公开 issue。
+Sample data, screenshots and documentation in this repository are entirely fictional. Do not commit your own `data/portfolio.json`, backups, real screenshots or exported CSVs to the public repository, and do not paste them into public issues.
 
-## 联系
+## Contact
 
-如发现隐私或安全问题，请通过仓库的 Issue 描述问题；不要在 Issue 中附带真实持仓数据。
+If you find a privacy or security issue, describe it in a repository issue. Never attach real holdings data to an issue.

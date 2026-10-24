@@ -18,7 +18,7 @@ struct InvestmentReviewApp: App {
     }
 
     var body: some Scene {
-        WindowGroup("复盘 300") {
+        WindowGroup("Koi 300") {
             ContentView()
                 .environmentObject(store)
                 .environmentObject(ui)

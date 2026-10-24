@@ -1,22 +1,22 @@
-# 数据格式与本地 API
+# Data format and local API
 
-复盘 300 的 macOS 原生版、Windows 桌面版和 Web 版使用同一份 JSON 结构。你可以在三个版本之间导出/导入。
+The macOS app, the Windows app and the web version all share one JSON structure. You can move data between them by exporting and importing.
 
-## 文件在哪里
+## Where the files are
 
-| 使用方式 | 路径 |
+| Mode | Path |
 | --- | --- |
-| Web 本地文件模式 | `data/portfolio.json` |
-| 本地备份 | `data/backups/portfolio-YYYYMMDD-HHmmss.json` |
-| macOS 原生应用 | `~/Library/Application Support/复盘 300/data.json` |
-| macOS 原生备份 | `~/Library/Application Support/复盘 300/Backups/` |
-| Windows 桌面应用 | `%APPDATA%\复盘 300\data\portfolio.json` |
-| Windows 备份 | `%APPDATA%\复盘 300\data\backups\` |
-| 浏览器模式 | `localStorage["fupan300.data.v1"]` |
+| Web, local-file mode | `data/portfolio.json` |
+| Local backups | `data/backups/portfolio-YYYYMMDD-HHmmss.json` |
+| macOS app | `~/Library/Application Support/Koi 300/data.json` |
+| macOS backups | `~/Library/Application Support/Koi 300/Backups/` |
+| Windows app | `%APPDATA%\Koi 300\data\portfolio.json` |
+| Windows backups | `%APPDATA%\Koi 300\data\backups\` |
+| Browser demo | `localStorage["koi300.data.v1"]` |
 
-应用内「数据与导出」会显示当前实际路径。
+The in-app "Data & export" page shows the actual path in use.
 
-## 顶层结构
+## Top level
 
 ```json
 {
@@ -30,118 +30,119 @@
 }
 ```
 
-- `schemaVersion`：当前为 `1`。
-- `lastModified`：ISO 8601 时间。
-- 缺少的数组会被当作空数组处理；字段类型不正确会拒绝导入。
-- 原生 Swift 版本和 Web 版本都会忽略未知字段，但**不要依赖这一点做迁移**。
+- `schemaVersion`: currently `1`.
+- `lastModified`: ISO 8601 timestamp.
+- Missing arrays are treated as empty; wrong field types cause the import to be rejected.
+- Both the native Swift app and the web version ignore unknown fields, but **do not rely on that for migrations**.
 
-## 格式约定
+## Conventions
 
-- ID：UUID 字符串，例如 `94788131-8295-478E-BDCA-C0662BE0F738`。导入时保留原 ID；新增时生成新 UUID。
-- 日期：`YYYY-MM-DD`，本地日期，不带时区。
-- 时间戳：ISO 8601，例如 `2026-10-24T08:00:00Z`。
-- 金额：JSON number，单位为元。
-- 盈亏颜色：红涨绿跌，仅影响展示，不改变数据。
-- 300 计数：`trades.length + reviews.length`。
+- IDs: UUID strings such as `94788131-8295-478E-BDCA-C0662BE0F738`. Imports keep existing IDs; new records get a new UUID.
+- Dates: `YYYY-MM-DD`, local date, no time zone.
+- Timestamps: ISO 8601, e.g. `2026-10-24T08:00:00Z`.
+- Amounts: JSON numbers in CNY.
+- P&L colours: red for gains, green for losses; display only, never stored.
+- 300 count: `trades.length + reviews.length`.
+- Enums: the Chinese desktop app writes Chinese values, the English web demo writes English ones. Both sides accept the other language and normalise on import, so a file can move between them without losing categories.
 
-> macOS 原生应用使用 Swift `JSONDecoder` 的 `.iso8601` 策略，因此时间戳**不要带毫秒**。Web 和桌面版写回时会自动去掉毫秒。
+> The native macOS app decodes with Swift's `.iso8601` strategy, so timestamps **must not include milliseconds**. The web and Windows versions strip milliseconds when writing.
 
-## assets（持仓）
+## assets (holdings)
 
-| 字段 | 类型 | 说明 |
+| Field | Type | Notes |
 | --- | --- | --- |
 | `id` | string | UUID |
-| `account` | string | 账户名称，例如「长期账户」 |
-| `category` | string | `场外基金`、`场内基金`、`股票`、`养老金`、`黄金`、`现金` |
-| `code` | string | 基金/股票代码，可为空 |
-| `name` | string | 名称 |
-| `cost` | number | 投入成本 |
-| `value` | number | 当前市值 |
-| `units` | number \| null | 持有份额 |
-| `costPrice` | number \| null | 成本价 |
-| `price` | number \| null | 现价 |
-| `note` | string | 备注 |
-| `nextStep` | string | 下一步 |
-| `dataStatus` | string | `手工填写`、`截图录入`、`券商截图`、`估算`、`待更新` |
-| `updatedAt` | string | ISO 时间 |
+| `account` | string | Account name, e.g. "Long-term" |
+| `category` | string | `Fund (OTC)` / `场外基金`, `Fund (ETF)` / `场内基金`, `Stock` / `股票`, `Pension` / `养老金`, `Gold` / `黄金`, `Cash` / `现金` |
+| `code` | string | Fund or stock code; may be empty |
+| `name` | string | Name |
+| `cost` | number | Invested cost |
+| `value` | number | Current value |
+| `units` | number \| null | Units held |
+| `costPrice` | number \| null | Cost per unit |
+| `price` | number \| null | Current price |
+| `note` | string | Note |
+| `nextStep` | string | Next step |
+| `dataStatus` | string | `Manual` / `手工填写`, `From screenshot` / `截图录入`, `Broker screenshot` / `券商截图`, `Estimate` / `估算`, `Needs update` / `待更新` |
+| `updatedAt` | string | ISO timestamp |
 
-## trades（交易）
+## trades
 
-| 字段 | 类型 | 说明 |
+| Field | Type | Notes |
 | --- | --- | --- |
 | `id` | string | UUID |
 | `date` | string | `YYYY-MM-DD` |
-| `account` | string | 账户 |
-| `category` | string | 同 assets |
-| `code` | string | 代码，可为空 |
-| `name` | string | 名称 |
-| `action` | string | `买入`、`卖出`、`定投`、`转换`、`分红` |
-| `amount` | number \| null | 金额 |
-| `shares` | number \| null | 份额 |
-| `price` | number \| null | 成交价 |
-| `fee` | number \| null | 费用 |
-| `realizedPnL` | number \| null | 已实现盈亏，可为负 |
-| `reason` | string | 为什么做这笔操作 |
-| `mood` | string | 情绪，自由文本 |
-| `market` | string | 当时的市场环境 |
-| `review` | string | 事后复盘 |
-| `followedPlan` | string | `待复盘`、`是`、`否`、`部分按计划` |
-| `lesson` | string | 教训 |
-| `createdAt` | string | ISO 时间 |
+| `account` | string | Account |
+| `category` | string | Same as assets |
+| `code` | string | Code; may be empty |
+| `name` | string | Name |
+| `action` | string | `Buy` / `买入`, `Sell` / `卖出`, `DCA` / `定投`, `Switch` / `转换`, `Dividend` / `分红` |
+| `amount` | number \| null | Amount |
+| `shares` | number \| null | Units |
+| `price` | number \| null | Fill price |
+| `fee` | number \| null | Fee |
+| `realizedPnL` | number \| null | Realised P&L; may be negative |
+| `reason` | string | Why this trade |
+| `mood` | string | Mood, free text |
+| `market` | string | Market context at the time |
+| `review` | string | Hindsight review |
+| `followedPlan` | string | `Not reviewed` / `待复盘`, `Yes` / `是`, `No` / `否`, `Partly` / `部分按计划` |
+| `lesson` | string | Lesson |
+| `createdAt` | string | ISO timestamp |
 
-## reviews（每日复盘）
+## reviews (daily)
 
-| 字段 | 类型 | 说明 |
+| Field | Type | Notes |
 | --- | --- | --- |
 | `id` | string | UUID |
-| `date` | string | `YYYY-MM-DD`，同一天只能有一篇 |
+| `date` | string | `YYYY-MM-DD`; only one entry per day |
 | `mood` | number | 1–5 |
-| `trigger` | string | 触发 |
-| `operations` | string | 操作 |
-| `market` | string | 市场 |
-| `didRight` | string | 做得对 |
-| `didWrong` | string | 做得不对 |
-| `nextPlan` | string | 下一步只做哪一件事 |
-| `createdAt` | string | ISO 时间 |
-| `updatedAt` | string | ISO 时间 |
+| `trigger` | string | Trigger |
+| `operations` | string | Actions taken |
+| `market` | string | Market |
+| `didRight` | string | What went right |
+| `didWrong` | string | What went wrong |
+| `nextPlan` | string | The single next step |
+| `createdAt` | string | ISO timestamp |
+| `updatedAt` | string | ISO timestamp |
 
-## plans（定投计划）
+## plans (DCA)
 
-| 字段 | 类型 | 说明 |
+| Field | Type | Notes |
 | --- | --- | --- |
 | `id` | string | UUID |
-| `platform` | string | 平台 |
-| `code` | string | 代码，可为空（原生应用使用 `—` 表示空） |
-| `name` | string | 名称 |
-| `category` | string | 同 assets |
-| `frequency` | string | `每月`、`每周`、`每日`、`每交易日`、`一次性` |
-| `amount` | number \| null | 每期金额 |
-| `debitDay` | string | 扣款日，自由文本 |
-| `startDate` | string | `YYYY-MM-DD` 或空 |
-| `status` | string | `进行中`、`已暂停`、`资金归集`、`已结束` |
-| `note` | string | 备注 |
+| `platform` | string | Platform |
+| `code` | string | Code; may be empty (the native app uses `—` for empty) |
+| `name` | string | Name |
+| `category` | string | Same as assets |
+| `frequency` | string | `Monthly` / `每月`, `Weekly` / `每周`, `Daily` / `每日`, `Every trading day` / `每交易日`, `One-off` / `一次性` |
+| `amount` | number \| null | Amount per period |
+| `debitDay` | string | Debit day, free text |
+| `startDate` | string | `YYYY-MM-DD` or empty |
+| `status` | string | `Active` / `进行中`, `Paused` / `已暂停`, `Cash pool` / `资金归集`, `Finished` / `已结束` |
+| `note` | string | Note |
 
-## snapshots（净值快照）
+## snapshots (value history)
 
-| 字段 | 类型 | 说明 |
+| Field | Type | Notes |
 | --- | --- | --- |
 | `id` | string | UUID |
 | `date` | string | `YYYY-MM-DD` |
-| `cost` | number | 当日总成本 |
-| `value` | number | 当日总市值 |
-| `cash` | number | 当日现金 |
+| `cost` | number | Total cost that day |
+| `value` | number | Total value that day |
+| `cash` | number | Cash that day |
 
-修改持仓或当日的复盘后，应用会自动维护当天的快照。导入历史数据时可以一起带入。
+Editing a holding or that day's review updates the day's snapshot automatically. Importing historical data may carry snapshots along.
 
-## 本地 HTTP API
+## Local HTTP API
 
-只有通过 `start-mac.command` / `启动-Windows.bat` 或 Windows 桌面版启动时，才会有 API。
+The API only exists when the app is started through `start-mac.command` / `start-windows.bat` or the Windows desktop app.
 
 ### `GET /api/status`
 
 ```json
 {
-  "app": "fupan-300",
+  "app": "koi-300",
   "mode": "local-file",
   "dataFile": "/path/to/data/portfolio.json",
   "dataDir": "/path/to/data",
@@ -154,14 +155,14 @@
 
 ### `GET /api/data`
 
-返回完整的顶层 JSON。
+Returns the complete top-level JSON.
 
 ### `PUT /api/data`
 
 - `Content-Type: application/json`
-- 最大 8 MB。
-- 写入前自动备份，使用临时文件 + rename 原子替换。
-- 成功返回 `{ "ok": true, "mtimeMs": ..., "counts": ... }`。
+- 8 MB maximum.
+- Backs up before writing; writes via a temp file plus atomic rename.
+- Returns `{ "ok": true, "mtimeMs": ..., "counts": ... }`.
 
 ```bash
 curl -X PUT -H 'Content-Type: application/json' \
@@ -171,35 +172,35 @@ curl -X PUT -H 'Content-Type: application/json' \
 
 ### `POST /api/backup`
 
-立即复制当前数据文件到 `data/backups/portfolio-YYYYMMDD-HHmmss.json`。
+Copies the current data file to `data/backups/portfolio-YYYYMMDD-HHmmss.json` immediately.
 
 ```bash
 curl -X POST http://127.0.0.1:4877/api/backup
 ```
 
-## 安全边界
+## Security boundaries
 
-- 服务只绑定 `127.0.0.1`。
-- 校验 `Host` 必须是 `127.0.0.1:<port>`、`localhost:<port>` 或 `[::1]:<port>`，用于阻挡 DNS rebinding。
-- 有 `Origin` 时只允许同源请求；不发送 CORS 头。
-- 备份最多保留 80 个。
-- 这不是一个面向公网的服务。不要反向代理、端口转发或部署到服务器。
+- The server binds to `127.0.0.1` only.
+- `Host` must be `127.0.0.1:<port>`, `localhost:<port>` or `[::1]:<port>`; this blocks DNS rebinding.
+- When `Origin` is present, only same-origin requests are allowed; no CORS headers are sent.
+- At most 80 backups are kept.
+- This is not an internet-facing service. Do not reverse-proxy it, forward its port or deploy it to a server.
 
-## 给 agent 的修改流程
+## Workflow for agents
 
-1. 先 `POST /api/backup`，或复制一份 JSON。
-2. 读取 `/api/data`（或直接读文件）。
-3. 只改必要字段，保留 `schemaVersion`、`id`、日期格式和其它记录的 UUID。
-4. 写回 `PUT /api/data`，或直接写文件（应用约 4 秒内检测到 mtime 变化并刷新）。
-5. 不要把数据发到外部服务，不要提交到公开仓库。
+1. `POST /api/backup` first, or copy the JSON.
+2. Read `/api/data` (or the file directly).
+3. Change only the necessary fields; keep `schemaVersion`, `id`, date formats and every other UUID intact.
+4. Write back with `PUT /api/data`, or edit the file directly (the app detects the mtime change within about 4 seconds and refreshes).
+5. Never send the data to an external service or commit it to a public repository.
 
-## 导入导出
+## Import and export
 
-- 完整 JSON：包含全部五类数据和 `lastModified`。
-- 持仓 CSV：账户、类别、成本、市值、盈亏、备注等。
-- 交易 CSV：含理由、情绪、市场、复盘、是否按计划、教训。
-- 复盘 CSV：按日期导出全部字段。
-- 计划 CSV：平台、频率、扣款日、状态与月估算。
-- CSV 使用 UTF-8 BOM，Excel 与 Numbers 可直接打开。
+- Full JSON: all five collections plus `lastModified`.
+- Holdings CSV: account, category, cost, value, P&L, notes and more.
+- Trades CSV: includes reason, mood, market, review, plan adherence and lesson.
+- Reviews CSV: every field, ordered by date.
+- Plans CSV: platform, frequency, debit day, status and monthly estimate.
+- CSVs use a UTF-8 BOM so Excel and Numbers open them directly.
 
-导入会覆盖当前数据；应用会先触发一次备份，再替换。浏览器模式会下载 JSON 备份；文件模式还会在 `data/backups/` 留一份。
+Importing replaces the current data. The app takes a backup first, then swaps it in. In browser mode it downloads a JSON backup; in file mode it also leaves one in `data/backups/`.
