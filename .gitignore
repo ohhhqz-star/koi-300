@@ -1,0 +1,31 @@
+# local data
+data/
+*.local.json
+
+# dependencies / build output
+desktop/node_modules/
+desktop/dist/
+mac/build/
+mac/dist/
+dist/
+
+# artifacts
+*.app
+*.exe
+*.zip
+*.sha256
+*.blockmap
+*.dmg
+
+# editor / OS
+.DS_Store
+Thumbs.db
+*.log
+.env
+.env.*
+*.xcuserstate
+
+# Python / QA scratch
+__pycache__/
+*.pyc
+.qa/

@@ -1,0 +1,19 @@
+{
+  "name": "复盘 300 · 本地投资复盘",
+  "short_name": "复盘 300",
+  "description": "在买入前，先写 300 次。数据只保存在本机。",
+  "lang": "zh-CN",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F6F2EA",
+  "theme_color": "#2C5D57",
+  "icons": [
+    {
+      "src": "assets/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
