@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Koi 300 · 锦记</title>
+  <meta name="robots" content="noindex">
+  <script>
+    (function () {
+      var saved = null;
+      try { saved = localStorage.getItem('koi300.lang'); } catch (error) { /* storage may be blocked */ }
+      var lang = saved === 'zh' || saved === 'en'
+        ? saved
+        : ((navigator.language || 'en').toLowerCase().indexOf('zh') === 0 ? 'zh' : 'en');
+      location.replace(lang + '/' + location.hash);
+    })();
+  </script>
+  <style>
+    html, body { height: 100%; margin: 0; }
+    body {
+      display: grid;
+      place-items: center;
+      background: #F6F2EA;
+      color: #6E6A60;
+      font: 13px/1.6 -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+    }
+    a { color: #1F4E4A; text-decoration: none; border-bottom: 1px solid currentColor; }
+    nav { display: flex; gap: 18px; justify-content: center; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <main>
+    <nav>
+      <a href="zh/" hreflang="zh-CN">锦记 · 中文</a>
+      <a href="en/" hreflang="en">Koi 300 · English</a>
+    </nav>
+  </main>
+</body>
+</html>

@@ -14,6 +14,9 @@ if (!gotLock) {
   let mainWindow = null;
   let serverInfo = null;
   let dataDir = '';
+  let uiLang = 'zh';
+
+  const T = (zh, en) => (uiLang === 'zh' ? zh : en);
 
   const runtimeRoot = app.isPackaged
     ? process.resourcesPath
@@ -51,17 +54,17 @@ if (!gotLock) {
       const result = await serverInfo.api.backup();
       await dialog.showMessageBox(mainWindow, {
         type: 'info',
-        title: '备份完成',
-        message: '已在本机保存一份数据备份。',
+        title: T('备份完成', 'Backup complete'),
+        message: T('已在本机保存一份数据备份。', 'A backup was saved on this computer.'),
         detail: result.path,
-        buttons: ['好']
+        buttons: [T('好', 'OK')]
       });
     } catch (error) {
       await dialog.showMessageBox(mainWindow, {
         type: 'error',
-        title: '备份失败',
-        message: error.message || '无法写入备份文件。',
-        buttons: ['好']
+        title: T('备份失败', 'Backup failed'),
+        message: error.message || T('无法写入备份文件。', 'Could not write the backup file.'),
+        buttons: [T('好', 'OK')]
       });
     }
   }
@@ -69,55 +72,55 @@ if (!gotLock) {
   function buildMenu() {
     const template = [
       {
-        label: '文件',
+        label: T('文件', 'File'),
         submenu: [
           {
-            label: '打开数据文件夹',
+            label: T('打开数据文件夹', 'Open data folder'),
             accelerator: 'CmdOrCtrl+D',
             click: () => shell.openPath(dataDir)
           },
           {
-            label: '立即备份数据',
+            label: T('立即备份数据', 'Back up now'),
             accelerator: 'CmdOrCtrl+B',
             click: () => backupFromMenu()
           },
           { type: 'separator' },
-          { role: 'quit', label: '退出' }
+          { role: 'quit', label: T('退出', 'Quit') }
         ]
       },
-      { role: 'editMenu', label: '编辑' },
+      { role: 'editMenu', label: T('编辑', 'Edit') },
       {
-        label: '视图',
+        label: T('视图', 'View'),
         submenu: [
-          { role: 'reload', label: '重新载入' },
-          { role: 'toggleDevTools', label: '开发者工具' },
+          { role: 'reload', label: T('重新载入', 'Reload') },
+          { role: 'toggleDevTools', label: T('开发者工具', 'Developer tools') },
           { type: 'separator' },
-          { role: 'resetZoom', label: '实际大小' },
-          { role: 'zoomIn', label: '放大' },
-          { role: 'zoomOut', label: '缩小' },
+          { role: 'resetZoom', label: T('实际大小', 'Actual size') },
+          { role: 'zoomIn', label: T('放大', 'Zoom in') },
+          { role: 'zoomOut', label: T('缩小', 'Zoom out') },
           { type: 'separator' },
-          { role: 'togglefullscreen', label: '全屏' }
+          { role: 'togglefullscreen', label: T('全屏', 'Toggle full screen') }
         ]
       },
       {
-        label: '帮助',
+        label: T('帮助', 'Help'),
         submenu: [
           {
-            label: '关于 Koi 300',
+            label: T('关于 锦记 Koi 300', 'About Koi 300 锦记'),
             click: () => {
               dialog.showMessageBox(mainWindow, {
                 type: 'info',
-                title: 'Koi 300',
-                message: 'Koi 300 · 本地优先的投资复盘',
+                title: T('锦记', 'Koi 300'),
+                message: T('锦记 · 本地优先的投资复盘', 'Koi 300 · A local-first investment review journal'),
                 detail: [
-                  `版本 ${app.getVersion()}`,
+                  T(`版本 ${app.getVersion()}`, `Version ${app.getVersion()}`),
                   '',
-                  '数据只保存在这台电脑，不上传云端。',
-                  `数据目录：${dataDir}`,
+                  T('数据只保存在这台电脑，不上传云端。', 'All data stays on this computer. Nothing is uploaded.'),
+                  T(`数据目录：${dataDir}`, `Data folder: ${dataDir}`),
                   '',
-                  '在买入前，先写 300 次。'
+                  T('在买入前，先写 300 次。', 'Write 300 entries before you buy.')
                 ].join('\n'),
-                buttons: ['好']
+                buttons: [T('好', 'OK')]
               });
             }
           }
@@ -125,6 +128,23 @@ if (!gotLock) {
       }
     ];
     Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+  }
+
+  async function syncLanguage() {
+    if (!mainWindow) return;
+    let lang;
+    try {
+      lang = await mainWindow.webContents.executeJavaScript(
+        "(function(){try{var v=localStorage.getItem('koi300.lang');if(v==='zh'||v==='en')return v;}catch(e){}" +
+          "return (navigator.language||'').toLowerCase().indexOf('zh')===0?'zh':'en';})()",
+        true
+      );
+    } catch {
+      lang = (app.getLocale() || '').toLowerCase().startsWith('zh') ? 'zh' : 'en';
+    }
+    uiLang = lang === 'en' ? 'en' : 'zh';
+    buildMenu();
+    mainWindow.setTitle(uiLang === 'zh' ? '锦记' : 'Koi 300');
   }
 
   function createWindow() {
@@ -147,8 +167,11 @@ if (!gotLock) {
     mainWindow.loadURL(serverInfo.url);
     mainWindow.on('page-title-updated', (event) => {
       event.preventDefault();
-      mainWindow.setTitle('Koi 300');
+      mainWindow.setTitle(uiLang === 'zh' ? '锦记' : 'Koi 300');
     });
+    mainWindow.webContents.on('did-finish-load', syncLanguage);
+    mainWindow.webContents.on('did-navigate', syncLanguage);
+    mainWindow.webContents.on('did-navigate-in-page', syncLanguage);
     mainWindow.on('closed', () => { mainWindow = null; });
     mainWindow.webContents.setWindowOpenHandler(({ url }) => {
       shell.openExternal(url);
@@ -161,12 +184,16 @@ if (!gotLock) {
 
   async function boot() {
     migrateLegacyUserData();
+    uiLang = (app.getLocale() || '').toLowerCase().startsWith('zh') ? 'zh' : 'en';
     dataDir = resolveDataDir();
     try {
       const { startWithFallback } = require(path.join(runtimeRoot, 'server', 'server.js'));
       serverInfo = await startWithFallback({ dataDir, port: 4877, open: false });
     } catch (error) {
-      dialog.showErrorBox('Koi 300 无法启动', error.message || String(error));
+      dialog.showErrorBox(
+        T('锦记 无法启动', 'Koi 300 could not start'),
+        error.message || String(error)
+      );
       app.quit();
       return;
     }

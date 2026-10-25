@@ -26,11 +26,11 @@ enum AppTheme: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .warm: return "暖米"
-        case .blush: return "淡粉"
-        case .mist: return "淡蓝"
-        case .snow: return "纯白"
-        case .night: return "黑夜"
+        case .warm: return T("暖米")
+        case .blush: return T("淡粉")
+        case .mist: return T("淡蓝")
+        case .snow: return T("纯白")
+        case .night: return T("黑夜")
         }
     }
 
@@ -432,7 +432,7 @@ struct Pill: View {
 }
 
 struct SearchField: View {
-    var placeholder: String = "搜索名称、代码或账户"
+    var placeholder: String = T("搜索名称、代码或账户")
     @Binding var text: String
     @FocusState private var focused: Bool
 
@@ -478,15 +478,15 @@ struct FilterMenu: View {
                     selection = option
                 } label: {
                     if selection == option {
-                        Label(option, systemImage: "checkmark")
+                        Label(T(option), systemImage: "checkmark")
                     } else {
-                        Text(option)
+                        Text(T(option))
                     }
                 }
             }
         } label: {
             HStack(spacing: 6) {
-                Text(selection)
+                Text(T(selection))
                     .font(.system(size: 12))
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
@@ -568,7 +568,7 @@ struct ToastView: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 if let url = toast.folderURL {
-                    Button("在 Finder 中显示") { onReveal(url) }
+                    Button(T("在 Finder 中显示")) { onReveal(url) }
                         .buttonStyle(.plain)
                         .font(.system(size: 11.5, weight: .semibold))
                         .foregroundStyle(Palette.accent)
@@ -638,7 +638,7 @@ struct SecondaryButtonStyle: ButtonStyle {
 struct SheetChrome<Content: View>: View {
     var title: String
     var subtitle: String?
-    var saveTitle: String = "保存"
+    var saveTitle: String = T("保存")
     var canSave: Bool = true
     var onCancel: () -> Void
     var onSave: () -> Void
@@ -685,13 +685,13 @@ struct SheetChrome<Content: View>: View {
 
             HStack(spacing: 10) {
                 if let onDelete {
-                    Button("删除这条记录", action: onDelete)
+                    Button(T("删除这条记录"), action: onDelete)
                         .buttonStyle(.plain)
                         .font(.system(size: 12.5, weight: .semibold))
                         .foregroundStyle(Palette.danger)
                 }
                 Spacer()
-                Button("取消", action: onCancel)
+                Button(T("取消"), action: onCancel)
                     .buttonStyle(SecondaryButtonStyle(compact: true))
                 Button(saveTitle, action: onSave)
                     .buttonStyle(PrimaryButtonStyle(compact: true))
@@ -890,7 +890,7 @@ struct ThemePicker: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("纸色")
+                Text(T("纸色"))
                     .font(.system(size: 10, weight: .medium))
                     .foregroundStyle(.tertiary)
                 Spacer()

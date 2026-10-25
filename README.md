@@ -12,7 +12,7 @@ A local-first investment review journal. Record holdings, trades and what you we
 
 300 is a practice quota this project set for itself. It is not a quote from a famous investor, and not a promise of returns.
 
-[Live demo](https://ohhhqz-star.github.io/koi-300/) · [Download](#download) · [Data format](docs/DATA.md) · [Privacy](PRIVACY.md) · [Notes for agents](AGENTS.md)
+[Live demo](https://ohhhqz-star.github.io/koi-300/en/) · [中文](README.zh-CN.md) · [Download](#download) · [Data format](docs/DATA.md) · [Privacy](PRIVACY.md) · [Notes for agents](AGENTS.md)
 
 ![Overview, warm rice theme](docs/screenshots/site-overview.png)
 
@@ -63,12 +63,12 @@ Koi 300 keeps those answers on your machine. Trades and daily reviews both count
 
 | Platform | File | Notes |
 | --- | --- | --- |
-| macOS 14+ | `Koi300-macOS-1.2.1-universal.zip` | Native SwiftUI app, universal for Apple Silicon and Intel |
-| Windows 10/11 | `Koi300-Setup-1.2.1.exe` | NSIS installer, installs per-user, no admin rights needed |
+| macOS 14+ | `Koi300-macOS-1.2.2-universal.zip` | Native SwiftUI app, universal for Apple Silicon and Intel |
+| Windows 10/11 | `Koi300-Setup-1.2.2.exe` | NSIS installer, installs per-user, no admin rights needed |
 
 Get them from [Releases](https://github.com/ohhhqz-star/koi-300/releases).
 
-> The desktop app UI is currently in Chinese. The browser demo and all public documentation are in English. Both apps read and write the same JSON.
+> Both desktop apps include a Chinese and an English interface. On macOS, switch under **Language** in the sidebar; the change is immediate, while the system menu bar (File / Go / Export) picks up the chosen language on the next launch. The app bundle and data folder keep the name `Koi 300`; the Chinese UI titles the window 锦记 (Jǐnjì). The web demo has two entry points: [/en/](https://ohhhqz-star.github.io/koi-300/en/) and [/zh/](https://ohhhqz-star.github.io/koi-300/zh/), and the root follows the saved choice or the browser language.
 
 ### First launch on macOS
 
@@ -96,8 +96,8 @@ You can also open the folder from the app menu: File → Open data folder.
 
 ### 1. Desktop app (recommended)
 
-- macOS: native SwiftUI, data stored in Application Support.
-- Windows: Electron shell plus a local Node server, running the same web UI in a window.
+- macOS: native SwiftUI, data stored in Application Support, bilingual UI.
+- Windows: Electron shell plus a local Node server, running the same web UI in a window, also bilingual.
 - Both import and export the same JSON.
 
 ### 2. Browser + local file (agent-friendly)
@@ -111,11 +111,11 @@ cd koi-300
 # or double-click start-windows.bat on Windows
 ```
 
-The browser opens `http://127.0.0.1:4877/`. Data is written to `data/portfolio.json` and backups to `data/backups/`. The server listens on the loopback interface only and stops when you close the terminal. This page is the app's Chinese UI; for the English demo use the GitHub Pages link above.
+The browser opens `http://127.0.0.1:4877/`, which redirects to `/zh/` or `/en/` based on the saved choice or the browser language. Data is written to `data/portfolio.json` and backups to `data/backups/`; both language versions share the same file and API. The server listens on the loopback interface only and stops when you close the terminal.
 
 ### 3. Browser only (GitHub Pages)
 
-The [live demo](https://ohhhqz-star.github.io/koi-300/) uses browser `localStorage`; nothing to install. Data stays in this browser on this device, and switching browsers or clearing site data will lose it. Export JSON first if it matters.
+The [live demo](https://ohhhqz-star.github.io/koi-300/en/) uses browser `localStorage`; nothing to install. Language can be switched at the top right, and `/` redirects to the saved language or the browser's preference. Data stays in this browser on this device, and switching browsers or clearing site data will lose it. Export JSON first if it matters.
 
 <p>
   <img src="docs/screenshots/site-mobile.png" width="300" alt="Mobile overview">
@@ -164,7 +164,7 @@ cd mac
 The script compiles arm64 and x86_64, merges them into a universal binary, ad-hoc signs it and outputs:
 
 ```text
-mac/dist/Koi300-macOS-1.2.1-universal.zip
+mac/dist/Koi300-macOS-1.2.2-universal.zip
 ```
 
 ### Windows installer
@@ -177,22 +177,24 @@ npm ci
 npm run dist
 ```
 
-The artifact is `desktop/dist/Koi300-Setup-1.2.1.exe`. Pushing a `v*` tag triggers `.github/workflows/release.yml`, which builds macOS and Windows and creates the release.
+The artifact is `desktop/dist/Koi300-Setup-1.2.2.exe`. Pushing a `v*` tag triggers `.github/workflows/release.yml`, which builds macOS and Windows and creates the release.
 
 ### Web
 
-The web app is a zero-dependency static site. `site/` is the English public demo deployed to GitHub Pages; `web/` is the Chinese app UI bundled into the desktop apps. Deploy either folder as-is. `server/server.js` uses Node built-in modules only.
+The web app is a zero-dependency static site. `site/` is the English UI (Koi 300), `web/` is the Chinese UI (锦记), and `shell/` redirects the root to the saved or preferred language. Both folders are bundled into the desktop apps; GitHub Pages assembles them into `/en/` and `/zh/`. `server/server.js` uses Node built-in modules only.
 
 ## Repository layout
 
 ```text
 koi-300/
-├── site/                # Public English web demo (GitHub Pages)
-├── web/                 # Web UI used by the desktop apps (Chinese)
+├── shell/               # Language redirect (/ → /zh/ or /en/)
+├── site/                # English UI (Koi 300, GitHub Pages /en/)
+├── web/                 # Chinese UI (锦记, GitHub Pages /zh/, bundled in desktop apps)
 ├── server/              # Local file server + JSON API
 ├── mac/                 # Native SwiftUI source and build script
 ├── desktop/             # Electron wrapper for Windows
 ├── docs/DATA.md         # Data format and API
+├── docs/DATA.zh-CN.md   # Chinese version of the data docs
 ├── docs/screenshots/    # Screenshots with fictional sample data
 ├── start-mac.command
 └── start-windows.bat

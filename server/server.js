@@ -9,6 +9,10 @@ const { exec } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..');
 const WEB_DIR = path.join(ROOT, 'web');
+const SITE_DIR = path.join(ROOT, 'site');
+const SHELL_DIR = path.join(ROOT, 'shell');
+const LOCALE_DIRS = { zh: WEB_DIR, en: SITE_DIR };
+const LANG_COOKIE = 'koi300.lang';
 const CUSTOM_DATA_DIR = process.env.KOI_DATA_DIR || process.env.FUPAN_DATA_DIR;
 const DEFAULT_DATA_DIR = CUSTOM_DATA_DIR
   ? path.resolve(CUSTOM_DATA_DIR)
@@ -176,6 +180,27 @@ function createApi({ dataDir }) {
   };
 }
 
+function readCookie(header, name) {
+  if (!header) return null;
+  for (const part of String(header).split(';')) {
+    const index = part.indexOf('=');
+    if (index === -1) continue;
+    if (part.slice(0, index).trim() === name) {
+      return decodeURIComponent(part.slice(index + 1).trim());
+    }
+  }
+  return null;
+}
+
+function preferredLanguage(req) {
+  const fromCookie = readCookie(req.headers.cookie, LANG_COOKIE);
+  if (fromCookie === 'zh' || fromCookie === 'en') return fromCookie;
+  const accept = String(req.headers['accept-language'] || '').toLowerCase();
+  if (accept.includes('zh')) return 'zh';
+  if (accept.includes('en')) return 'en';
+  return 'zh';
+}
+
 function safeStaticPath(urlPath) {
   let pathname;
   try {
@@ -183,10 +208,19 @@ function safeStaticPath(urlPath) {
   } catch {
     return null;
   }
-  if (pathname === '/') pathname = '/index.html';
   if (pathname.includes('\0')) return null;
-  const target = path.resolve(WEB_DIR, '.' + pathname);
-  if (target !== WEB_DIR && !target.startsWith(WEB_DIR + path.sep)) return null;
+
+  let base = SHELL_DIR;
+  let relative = pathname;
+  const locale = /^\/(en|zh)(?:\/(.*))?$/.exec(pathname);
+  if (locale) {
+    base = LOCALE_DIRS[locale[1]];
+    relative = '/' + (locale[2] || '');
+  }
+  if (relative === '/' || relative.endsWith('/')) relative += 'index.html';
+
+  const target = path.resolve(base, '.' + relative);
+  if (target !== base && !target.startsWith(base + path.sep)) return null;
   return target;
 }
 
@@ -338,6 +372,24 @@ function startServer(options = {}) {
         sendJSON(res, 405, { error: '只支持 GET' });
         return;
       }
+
+      if (pathname === '/' || pathname === '/index.html') {
+        const lang = preferredLanguage(req);
+        res.writeHead(302, {
+          Location: `/${lang}/${url.search}`,
+          'Cache-Control': 'no-store'
+        });
+        res.end();
+        return;
+      }
+      if (pathname === '/en' || pathname === '/zh') {
+        res.writeHead(301, {
+          Location: `${pathname}/${url.search}`,
+          'Cache-Control': 'no-store'
+        });
+        res.end();
+        return;
+      }
       await serveStatic(req, res, pathname);
     } catch (error) {
       const status = error.status || 500;
@@ -353,8 +405,10 @@ function startServer(options = {}) {
       const port = typeof address === 'object' && address ? address.port : 0;
       const url = `http://${HOST}:${port}/`;
       console.log('');
-      console.log('  Koi 300 · 本地文件模式');
-      console.log(`  打开：${url}`);
+      console.log('  Koi 300 · 锦记 · 本地文件模式');
+      console.log(`  打开：${url}　（默认跟随系统语言，可切换 中文 / English）`);
+      console.log(`  中文：${url}zh/`);
+      console.log(`  English：${url}en/`);
       console.log(`  数据：${api.dataFile}`);
       console.log('  只监听 127.0.0.1，关闭窗口或按 Ctrl+C 停止。');
       console.log('');

@@ -1,7 +1,7 @@
 {
   "name": "koi300-desktop",
   "productName": "Koi 300",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Local-first investment review journal: holdings, trades, daily reviews, DCA plans and the 300-entry practice.",
   "author": "Koi 300 contributors",
   "license": "MIT",
@@ -36,6 +36,16 @@
       {
         "from": "../web",
         "to": "web",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "../site",
+        "to": "site",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "../shell",
+        "to": "shell",
         "filter": ["**/*"]
       }
     ],

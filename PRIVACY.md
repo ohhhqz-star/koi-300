@@ -2,6 +2,8 @@
 
 Last updated: 2026-10-24
 
+[中文](PRIVACY.zh-CN.md)
+
 ## In one sentence
 
 Koi 300 does not collect, upload or sell your data. There is no account system and no cloud sync.
@@ -17,7 +19,7 @@ Koi 300 does not collect, upload or sell your data. There is no account system a
 
 ### Browser demo
 
-- Data is written to the current site's `localStorage` in the current browser, under the keys `koi300.data.v1` and `koi300.theme`.
+- Data is written to the current site's `localStorage` in the current browser, under the keys `koi300.data.v1` and `koi300.theme`; the language choice is stored as `koi300.lang`.
 - Clearing site data, switching browsers or using private mode can lose your data. Export JSON regularly.
 - GitHub Pages only hosts static files. GitHub, as the host, may keep ordinary access logs (IP, User-Agent and similar); this is standard for any hosting service. The app itself never sends investment data to GitHub or anyone else.
 
@@ -33,6 +35,11 @@ Koi 300 does not collect, upload or sell your data. There is no account system a
 - Requests quotes, exchange rates, news or font CDNs.
 - Requires login, a phone number, an email address or identity verification.
 - Checks for updates automatically (new releases must be downloaded manually).
+
+## Language preference
+
+- The desktop apps store the interface language locally in `UserDefaults` under `app.language`; the browser and local-file modes use `localStorage["koi300.lang"]`.
+- The preference only selects interface copy and contains no financial data.
 
 ## How your data is protected
 

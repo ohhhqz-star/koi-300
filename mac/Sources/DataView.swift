@@ -11,10 +11,10 @@ struct DataView: View {
         ScrollView {
             VStack(spacing: 16) {
                 PageHeader(
-                    "数据与导出",
-                    subtitle: "随时导出，数据只保存在这台 Mac　·　当前共 \(store.data.assets.count) 条资产、\(store.data.trades.count) 笔操作、\(store.data.reviews.count) 条复盘"
+                    T("数据与导出"),
+                    subtitle: T("随时导出，数据只保存在这台 Mac　·　当前共 %d 条资产、%d 笔操作、%d 条复盘", store.data.assets.count, store.data.trades.count, store.data.reviews.count)
                 ) {
-                    Button("导出 Excel") { runExport(.excel, store: store, ui: ui) }
+                    Button(T("导出 Excel")) { runExport(.excel, store: store, ui: ui) }
                         .buttonStyle(PrimaryButtonStyle(compact: true))
                 }
 
@@ -36,27 +36,27 @@ struct DataView: View {
             .frame(maxWidth: .infinity)
         }
         .background(PageBackground())
-        .alert("恢复这份备份？", isPresented: Binding(
+        .alert(T("恢复这份备份？"), isPresented: Binding(
             get: { pendingImport != nil },
             set: { if !$0 { pendingImport = nil } }
         )) {
-            Button("取消", role: .cancel) { pendingImport = nil }
-            Button("恢复", role: .destructive) {
+            Button(T("取消"), role: .cancel) { pendingImport = nil }
+            Button(T("恢复"), role: .destructive) {
                 guard let preview = pendingImport else { return }
                 do {
                     try store.importData(preview.data)
                     ui.showToast(
-                        title: "备份已恢复",
-                        message: "\(preview.assetCount) 条资产 · \(preview.tradeCount) 笔操作 · \(preview.reviewCount) 条复盘"
+                        title: T("备份已恢复"),
+                        message: T("%d 条资产 · %d 笔操作 · %d 条复盘", preview.assetCount, preview.tradeCount, preview.reviewCount)
                     )
                 } catch {
-                    ui.showToast(title: "恢复失败", message: error.localizedDescription, isError: true)
+                    ui.showToast(title: T("恢复失败"), message: error.localizedDescription, isError: true)
                 }
                 pendingImport = nil
             }
         } message: {
             if let preview = pendingImport {
-                Text("将用 \(preview.fileName) 替换当前数据。恢复前会自动保留一份当前数据的备份。\n\n备份内容：\(preview.assetCount) 条资产、\(preview.tradeCount) 笔操作、\(preview.reviewCount) 条复盘。")
+                Text(T("将用 %@ 替换当前数据。恢复前会自动保留一份当前数据的备份。\n\n备份内容：%d 条资产、%d 笔操作、%d 条复盘。", preview.fileName, preview.assetCount, preview.tradeCount, preview.reviewCount))
             }
         }
     }
@@ -64,7 +64,7 @@ struct DataView: View {
     private var exportCard: some View {
         Card(padding: 20) {
             VStack(alignment: .leading, spacing: 14) {
-                CardTitle(title: "导出", subtitle: "任何时候都可以导出", icon: "square.and.arrow.up")
+                CardTitle(title: T("导出"), subtitle: T("任何时候都可以导出"), icon: "square.and.arrow.up")
 
                 Button {
                     runExport(.excel, store: store, ui: ui)
@@ -77,16 +77,16 @@ struct DataView: View {
                             .background(Color.white.opacity(0.09))
                             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                         VStack(alignment: .leading, spacing: 3) {
-                            Text("Excel 工作簿")
+                            Text(T("Excel 工作簿"))
                                 .font(.system(size: 13.5, weight: .semibold))
                                 .foregroundStyle(Color(hex: 0xF7F3E9))
-                            Text("概览、当前持仓、操作记录、每日复盘、定投计划、净值快照，共 6 个工作表。")
+                            Text(T("概览、当前持仓、操作记录、每日复盘、定投计划、净值快照，共 6 个工作表。"))
                                 .font(.system(size: 10.5))
                                 .foregroundStyle(Color(hex: 0xF7F3E9).opacity(0.62))
                                 .multilineTextAlignment(.leading)
                         }
                         Spacer()
-                        Text("导出")
+                        Text(T("导出"))
                             .font(.system(size: 11.5, weight: .semibold))
                             .foregroundStyle(Palette.accentDeep)
                             .padding(.horizontal, 13)
@@ -105,31 +105,31 @@ struct DataView: View {
                 VStack(spacing: 2) {
                     exportRow(
                         icon: "doc.zipper",
-                        title: "完整 JSON 备份",
-                        subtitle: "包含所有数据，可在本应用中恢复。",
+                        title: T("完整 JSON 备份"),
+                        subtitle: T("包含所有数据，可在本应用中恢复。"),
                         action: { runExport(.backupJSON, store: store, ui: ui) }
                     )
                     exportRow(
                         icon: "tablecells.badge.ellipsis",
-                        title: "当前持仓 CSV",
-                        subtitle: "适合 Excel / Numbers 直接打开。",
+                        title: T("当前持仓 CSV"),
+                        subtitle: T("适合 Excel / Numbers 直接打开。"),
                         action: { runExport(.holdingsCSV, store: store, ui: ui) }
                     )
                     exportRow(
                         icon: "list.bullet.rectangle",
-                        title: "操作记录 CSV",
-                        subtitle: "每一笔操作及当时的理由。",
+                        title: T("操作记录 CSV"),
+                        subtitle: T("每一笔操作及当时的理由。"),
                         action: { runExport(.tradesCSV, store: store, ui: ui) }
                     )
                     exportRow(
                         icon: "book",
-                        title: "每日复盘 CSV",
-                        subtitle: "按日期导出心态与复盘记录。",
+                        title: T("每日复盘 CSV"),
+                        subtitle: T("按日期导出心态与复盘记录。"),
                         action: { runExport(.reviewsCSV, store: store, ui: ui) }
                     )
                 }
 
-                Text("导出的文件不会覆盖原始工作簿，也不会改动应用里的数据。")
+                Text(T("导出的文件不会覆盖原始工作簿，也不会改动应用里的数据。"))
                     .font(.system(size: 10))
                     .foregroundStyle(.tertiary)
                     .padding(.top, 2)
@@ -168,9 +168,9 @@ struct DataView: View {
     private var localDataCard: some View {
         Card(padding: 18) {
             VStack(alignment: .leading, spacing: 12) {
-                CardTitle(title: "本地数据", subtitle: "自动保存", icon: "externaldrive")
+                CardTitle(title: T("本地数据"), subtitle: T("自动保存"), icon: "externaldrive")
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("数据文件")
+                    Text(T("数据文件"))
                         .font(.system(size: 9.5, weight: .semibold))
                         .foregroundStyle(.tertiary)
                     Text(store.dataURL.path)
@@ -184,7 +184,7 @@ struct DataView: View {
                             .foregroundStyle(.tertiary)
                         Text("·")
                             .foregroundStyle(.quaternary)
-                        Text("自动备份 \(store.backupFiles().count) 份")
+                        Text(T("自动备份 %d 份", store.backupFiles().count))
                             .font(.system(size: 9.5))
                             .foregroundStyle(.tertiary)
                     }
@@ -195,28 +195,28 @@ struct DataView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
 
                 HStack(spacing: 8) {
-                    Button("在 Finder 中显示") { ExportService.reveal(store.dataURL) }
+                    Button(T("在 Finder 中显示")) { ExportService.reveal(store.dataURL) }
                         .buttonStyle(SecondaryButtonStyle(compact: true))
-                    Button("立即备份") { runBackupNow(store: store, ui: ui) }
+                    Button(T("立即备份")) { runBackupNow(store: store, ui: ui) }
                         .buttonStyle(SecondaryButtonStyle(compact: true))
                     Spacer()
                     Button {
                         NSPasteboard.general.clearContents()
                         NSPasteboard.general.setString(store.dataURL.path, forType: .string)
-                        ui.showToast(title: "路径已复制")
+                        ui.showToast(title: T("路径已复制"))
                     } label: {
                         Image(systemName: "doc.on.doc")
                             .font(.system(size: 11))
                             .foregroundStyle(.secondary)
                     }
                     .buttonStyle(.plain)
-                    .help("复制数据文件路径")
+                    .help(T("复制数据文件路径"))
                 }
 
                 if !recentBackups.isEmpty {
                     Divider().opacity(0.55)
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("最近备份")
+                        Text(T("最近备份"))
                             .font(.system(size: 9.5, weight: .semibold))
                             .foregroundStyle(.tertiary)
                         ForEach(recentBackups, id: \.self) { url in
@@ -230,7 +230,7 @@ struct DataView: View {
                                     .lineLimit(1)
                                     .truncationMode(.middle)
                                 Spacer()
-                                Button("显示") { ExportService.reveal(url) }
+                                Button(T("显示")) { ExportService.reveal(url) }
                                     .buttonStyle(.plain)
                                     .font(.system(size: 9.5, weight: .medium))
                                     .foregroundStyle(Palette.accent)
@@ -245,15 +245,15 @@ struct DataView: View {
     private var restoreCard: some View {
         Card(padding: 18) {
             VStack(alignment: .leading, spacing: 10) {
-                CardTitle(title: "恢复备份", subtitle: "谨慎操作", icon: "arrow.counterclockwise")
-                Text("从本应用导出的 JSON 备份恢复全部数据。恢复前会自动把当前数据另存一份。")
+                CardTitle(title: T("恢复备份"), subtitle: T("谨慎操作"), icon: "arrow.counterclockwise")
+                Text(T("从本应用导出的 JSON 备份恢复全部数据。恢复前会自动把当前数据另存一份。"))
                     .font(.system(size: 11))
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
                 Button {
                     chooseImport()
                 } label: {
-                    Label("选择 JSON 备份…", systemImage: "doc.badge.arrow.up")
+                    Label(T("选择 JSON 备份…"), systemImage: "doc.badge.arrow.up")
                 }
                 .buttonStyle(SecondaryButtonStyle(compact: true))
                 .padding(.top, 1)
@@ -271,9 +271,9 @@ struct DataView: View {
                     .background(Palette.accent.opacity(0.08))
                     .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Koi 300 · 本地版 1.2.1")
+                    Text(T("Koi 300 · 本地版 1.2.2"))
                         .font(.system(size: 12.5, weight: .semibold))
-                    Text("没有账号、没有云端、不发起网络请求。数据保存在 Application Support，导出文件可以在 Excel 或 Numbers 中打开。")
+                    Text(T("没有账号、没有云端、不发起网络请求。数据保存在 Application Support，导出文件可以在 Excel 或 Numbers 中打开。"))
                         .font(.system(size: 10.5))
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -306,7 +306,7 @@ struct DataView: View {
             let data = try ExportService.loadBackup(url)
             pendingImport = ImportPreview(url: url, data: data)
         } catch {
-            ui.showToast(title: "无法读取备份", message: error.localizedDescription, isError: true)
+            ui.showToast(title: T("无法读取备份"), message: error.localizedDescription, isError: true)
         }
     }
 }

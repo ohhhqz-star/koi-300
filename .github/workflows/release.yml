@@ -91,20 +91,27 @@ jobs:
         with:
           name: Koi 300 ${{ github.ref_name }}
           body: |
-            Koi 300 — a local-first investment review journal.
+            Koi 300 (锦记) — a local-first investment review journal.
             Write 300 entries before you buy. Style isn't imagined. It's recorded.
 
             - macOS: `Koi300-macOS-${{ env.VERSION }}-universal.zip` — universal binary for Apple Silicon and Intel.
             - Windows: `Koi300-Setup-${{ env.VERSION }}.exe` — per-user NSIS installer, no admin rights needed.
             - `SHA256SUMS.txt` — checksums for both files.
 
+            **Bilingual UI.** Both desktop apps ship with a Chinese and an English interface.
+            On macOS, switch under Language in the sidebar (the menu bar follows on the next launch);
+            on Windows, use the language link in the window. The web demo has two entry points:
+            https://ohhhqz-star.github.io/koi-300/en/ and https://ohhhqz-star.github.io/koi-300/zh/.
+            English and Chinese JSON import cleanly into either version.
+
+            **中英双语界面。** 桌面端内置中文与英文，macOS 在侧边栏「语言」中切换，Windows 在窗口内切换；
+            网页演示提供 `/en/` 与 `/zh/` 两个入口。中英文写出的 JSON 都可以互相导入。
+
             First launch on macOS: right-click the app → Open; if macOS still blocks it, run
             `xattr -dr com.apple.quarantine "/Applications/Koi 300.app"`.
 
-            The desktop app UI is currently in Chinese; the browser demo at
-            https://ohhhqz-star.github.io/koi-300/ is in English.
-
-            All data stays on your machine. See the README and docs/DATA.md for details.
+            All data stays on your machine. See README.md / README.zh-CN.md and
+            docs/DATA.md / docs/DATA.zh-CN.md for details.
           files: |
             artifacts/release/*.zip
             artifacts/release/*.exe

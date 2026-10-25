@@ -1,6 +1,6 @@
 {
-  "name": "Koi 300 · 本地投资复盘",
-  "short_name": "Koi 300",
+  "name": "锦记 · 本地投资复盘",
+  "short_name": "锦记",
   "description": "在买入前，先写 300 次。数据只保存在本机。",
   "lang": "zh-CN",
   "start_url": "./",

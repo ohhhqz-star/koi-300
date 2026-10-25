@@ -24,12 +24,15 @@ struct OverviewView: View {
         ScrollView {
             VStack(spacing: 18) {
                 PageHeader(
-                    "概览",
-                    subtitle: "\(DateFmt.chinese.string(from: Date()))　·　\(store.data.assets.count) 条资产　·　更新于 \(store.data.lastModified.formatted(date: .omitted, time: .shortened))"
+                    T("概览"),
+                    subtitle: T("%@　·　%d 条资产　·　更新于 %@",
+                                DateFmt.chinese.string(from: Date()),
+                                store.data.assets.count,
+                                store.data.lastModified.formatted(date: .omitted, time: .shortened))
                 ) {
-                    Button("记一笔操作") { ui.modal = .trade(nil) }
+                    Button(T("记一笔操作")) { ui.modal = .trade(nil) }
                         .buttonStyle(SecondaryButtonStyle(compact: true))
-                    Button("写今日复盘") { ui.openTodayReview(store: store) }
+                    Button(T("写今日复盘")) { ui.openTodayReview(store: store) }
                         .buttonStyle(PrimaryButtonStyle(compact: true))
                 }
 
@@ -63,10 +66,10 @@ struct OverviewView: View {
         HStack(alignment: .center, spacing: 30) {
             VStack(alignment: .leading, spacing: 15) {
                 HStack(spacing: 7) {
-                    Text("当前总资产")
+                    Text(T("当前总资产"))
                         .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(Color.white.opacity(0.58))
-                    Text("元")
+                    Text(T("元"))
                         .font(.system(size: 10))
                         .foregroundStyle(Color.white.opacity(0.38))
                 }
@@ -82,11 +85,11 @@ struct OverviewView: View {
                 }
 
                 HStack(spacing: 26) {
-                    heroStat("总投入成本", Fmt.money(store.totalCost))
+                    heroStat(T("总投入成本"), Fmt.money(store.totalCost))
                     Rectangle().fill(Color.white.opacity(0.10)).frame(width: 1, height: 28)
-                    heroStat("持仓市值", Fmt.money(store.holdingsValue))
+                    heroStat(T("持仓市值"), Fmt.money(store.holdingsValue))
                     Rectangle().fill(Color.white.opacity(0.10)).frame(width: 1, height: 28)
-                    heroStat("现金", Fmt.money(store.totalCash))
+                    heroStat(T("现金"), Fmt.money(store.totalCash))
                 }
                 .padding(.top, 2)
             }
@@ -95,18 +98,18 @@ struct OverviewView: View {
 
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
-                    Text("净值走势")
+                    Text(T("净值走势"))
                         .font(.system(size: 11, weight: .medium))
                         .foregroundStyle(Color.white.opacity(0.56))
                     Spacer()
-                    Text("\(store.data.snapshots.count) 个记录日")
+                    Text(T("%d 个记录日", store.data.snapshots.count))
                         .font(.system(size: 10))
                         .foregroundStyle(Color.white.opacity(0.36))
                 }
                 NetWorthSparkline(snapshots: store.snapshotsSorted)
                     .frame(height: 76)
                 HStack {
-                    Text(store.snapshotsSorted.first.map { DateFmt.short($0.date) } ?? "今天开始")
+                    Text(store.snapshotsSorted.first.map { DateFmt.short($0.date) } ?? T("今天开始"))
                         .font(.system(size: 9.5))
                         .foregroundStyle(Color.white.opacity(0.34))
                     Spacer()
@@ -181,7 +184,7 @@ struct OverviewView: View {
 
                 VStack(alignment: .leading, spacing: 7) {
                     HStack(spacing: 8) {
-                        Text("300 记录计划")
+                        Text(T("300 记录计划"))
                             .font(.system(size: 11.5, weight: .semibold))
                         Text(Record300.stage(count))
                             .font(.system(size: 10.5))
@@ -196,7 +199,7 @@ struct OverviewView: View {
                         }
                     }
                     .frame(height: 4)
-                    Text("交易与每日复盘都计入　·　不用一次写很多，写真的就行")
+                    Text(T("交易与每日复盘都计入　·　不用一次写很多，写真的就行"))
                         .font(.system(size: 9.5))
                         .foregroundStyle(.tertiary)
                 }
@@ -206,9 +209,9 @@ struct OverviewView: View {
                     .frame(width: 1, height: 42)
 
                 VStack(alignment: .leading, spacing: 3) {
-                    Text("在买入前，先写 300 次。")
+                    Text(T("在买入前，先写 300 次。"))
                         .font(.system(size: 12, weight: .semibold))
-                    Text("风格不是想出来的，是记出来的。")
+                    Text(T("风格不是想出来的，是记出来的。"))
                         .font(.system(size: 10.5))
                         .foregroundStyle(.secondary)
                 }
@@ -222,23 +225,25 @@ struct OverviewView: View {
         HStack(spacing: 16) {
             InsightCard(
                 icon: "arrow.down.right",
-                label: "最大浮亏",
+                label: T("最大浮亏"),
                 value: store.biggestLoss.map { Fmt.money($0.pnl, signed: true) } ?? "—",
-                detail: store.biggestLoss.map { "\($0.name)　\(Fmt.percent($0.pnlRate))" } ?? "暂无持仓",
+                detail: store.biggestLoss.map { "\($0.name)　\(Fmt.percent($0.pnlRate))" } ?? T("暂无持仓"),
                 tint: Palette.loss
             )
             InsightCard(
                 icon: "chart.pie",
-                label: "仓位最重",
+                label: T("仓位最重"),
                 value: store.topHolding.map { Fmt.money($0.value) } ?? "—",
-                detail: store.topHolding.map { "\($0.name)　\(Fmt.percent(store.allocation(of: $0), signed: false))" } ?? "暂无持仓",
+                detail: store.topHolding.map { "\($0.name)　\(Fmt.percent(store.allocation(of: $0), signed: false))" } ?? T("暂无持仓"),
                 tint: Palette.accent
             )
             InsightCard(
                 icon: "banknote",
-                label: "现金占比",
+                label: T("现金占比"),
                 value: Fmt.percent(store.cashShare, signed: false),
-                detail: "现金 \(Fmt.money(store.totalCash)) 元　·　共 \(store.data.assets.filter { $0.category == AssetCategory.cash.rawValue }.count) 笔",
+                detail: T("现金 %@ 元　·　共 %d 笔",
+                           Fmt.money(store.totalCash),
+                           store.data.assets.filter { $0.category == AssetCategory.cash.rawValue }.count),
                 tint: Palette.gold
             )
         }
@@ -247,13 +252,13 @@ struct OverviewView: View {
     private var accountDistribution: some View {
         Card {
             VStack(alignment: .leading, spacing: 16) {
-                CardTitle(title: "账户分布", subtitle: "按当前市值", icon: "square.stack.3d.up")
+                CardTitle(title: T("账户分布"), subtitle: T("按当前市值"), icon: "square.stack.3d.up")
                 if store.accountSummaries.isEmpty {
                     EmptyState(
                         icon: "tray",
-                        title: "还没有持仓",
-                        message: "先加一条资产，账户分布、类别和净值走势会自动更新。",
-                        actionTitle: "新增持仓"
+                        title: T("还没有持仓"),
+                        message: T("先加一条资产，账户分布、类别和净值走势会自动更新。"),
+                        actionTitle: T("新增持仓")
                     ) {
                         ui.modal = .asset(nil)
                     }
@@ -265,7 +270,7 @@ struct OverviewView: View {
                     }
                     Divider().opacity(0.55)
                     HStack {
-                        Text("合计")
+                        Text(T("合计"))
                             .font(.system(size: 11.5, weight: .semibold))
                             .foregroundStyle(.secondary)
                         Spacer()
@@ -323,7 +328,7 @@ struct OverviewView: View {
     private var categoryCard: some View {
         Card {
             VStack(alignment: .leading, spacing: 14) {
-                CardTitle(title: "资产类别", subtitle: "含现金", icon: "chart.pie")
+                CardTitle(title: T("资产类别"), subtitle: T("含现金"), icon: "chart.pie")
                 HStack(spacing: 22) {
                     DonutChart(summaries: store.categorySummaries, total: store.totalValue)
                         .frame(width: 142, height: 142)
@@ -333,7 +338,7 @@ struct OverviewView: View {
                                 RoundedRectangle(cornerRadius: 2)
                                     .fill(ChartPalette.color(index))
                                     .frame(width: 7, height: 7)
-                                Text(category.name)
+                                Text(T(category.name))
                                     .font(.system(size: 11))
                                 Spacer(minLength: 4)
                                 Text(Fmt.percent(store.totalValue == 0 ? 0 : category.value / store.totalValue, signed: false))
@@ -346,11 +351,11 @@ struct OverviewView: View {
                 }
                 Divider().opacity(0.55)
                 HStack(alignment: .firstTextBaseline) {
-                    Text("持仓 \(Fmt.money(store.holdingsValue))")
+                    Text(T("持仓 %@", Fmt.money(store.holdingsValue)))
                         .font(.system(size: 11))
                         .foregroundStyle(.secondary)
                     Spacer()
-                    Text("现金 \(Fmt.money(store.totalCash))")
+                    Text(T("现金 %@", Fmt.money(store.totalCash)))
                         .font(.system(size: 11))
                         .foregroundStyle(.secondary)
                 }
@@ -362,10 +367,10 @@ struct OverviewView: View {
         Card {
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
-                    CardTitle(title: "最近复盘", subtitle: "先记事实，再记感受", icon: "book.closed")
+                    CardTitle(title: T("最近复盘"), subtitle: T("先记事实，再记感受"), icon: "book.closed")
                     Spacer()
                     if !store.reviewsSorted.isEmpty {
-                        Button("查看全部") { ui.section = .reviews }
+                        Button(T("查看全部")) { ui.section = .reviews }
                             .buttonStyle(.plain)
                             .font(.system(size: 11, weight: .semibold))
                             .foregroundStyle(Palette.accent)
@@ -374,13 +379,13 @@ struct OverviewView: View {
 
                 if store.reviewsSorted.isEmpty {
                     VStack(alignment: .leading, spacing: 9) {
-                        Text("今天写下第一句就够。")
+                        Text(T("今天写下第一句就够。"))
                             .font(.system(size: 15, weight: .semibold))
-                        Text("市场怎么样、你做了什么、下一步只做哪一件事。3–5 行即可。")
+                        Text(T("市场怎么样、你做了什么、下一步只做哪一件事。3–5 行即可。"))
                             .font(.system(size: 11.5))
                             .foregroundStyle(.secondary)
                             .fixedSize(horizontal: false, vertical: true)
-                        Button("写今日复盘") { ui.openTodayReview(store: store) }
+                        Button(T("写今日复盘")) { ui.openTodayReview(store: store) }
                             .buttonStyle(PrimaryButtonStyle(compact: true))
                             .padding(.top, 3)
                     }
@@ -406,9 +411,9 @@ struct OverviewView: View {
         Card {
             VStack(alignment: .leading, spacing: 13) {
                 HStack {
-                    CardTitle(title: "定投节奏", subtitle: "按当前计划估算", icon: "calendar.badge.clock")
+                    CardTitle(title: T("定投节奏"), subtitle: T("按当前计划估算"), icon: "calendar.badge.clock")
                     Spacer()
-                    Button("管理") { ui.section = .plans }
+                    Button(T("管理")) { ui.section = .plans }
                         .buttonStyle(.plain)
                         .font(.system(size: 11, weight: .semibold))
                         .foregroundStyle(Palette.accent)
@@ -419,11 +424,11 @@ struct OverviewView: View {
                         .font(.system(size: 25, weight: .semibold, design: .rounded))
                         .monospacedDigit()
                         .foregroundStyle(Palette.accent)
-                    Text("元 / 月")
+                    Text(T("元 / 月"))
                         .font(.system(size: 10.5))
                         .foregroundStyle(.secondary)
                     Spacer()
-                    Text("\(store.activePlansCount) 个进行中")
+                    Text(T("%d 个进行中", store.activePlansCount))
                         .font(.system(size: 10.5))
                         .foregroundStyle(.secondary)
                 }
@@ -439,7 +444,7 @@ struct OverviewView: View {
                             Text(Fmt.money(plan.amount ?? 0))
                                 .font(.system(size: 11, weight: .medium, design: .rounded))
                                 .monospacedDigit()
-                            Text("/ \(plan.frequency)")
+                            Text("/ \(T(plan.frequency))")
                                 .font(.system(size: 9.5))
                                 .foregroundStyle(.tertiary)
                         }
@@ -449,7 +454,7 @@ struct OverviewView: View {
                 Divider().opacity(0.55)
                 HStack(alignment: .firstTextBaseline) {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("每月备用金")
+                        Text(T("每月备用金"))
                             .font(.system(size: 10))
                             .foregroundStyle(.secondary)
                         Text(store.cashPoolPlan?.amount.map { Fmt.money($0) } ?? "—")
@@ -457,7 +462,7 @@ struct OverviewView: View {
                             .monospacedDigit()
                     }
                     Spacer()
-                    Text("实际以扣款为准")
+                    Text(T("实际以扣款为准"))
                         .font(.system(size: 9.5))
                         .foregroundStyle(.tertiary)
                 }
@@ -527,7 +532,7 @@ struct DonutChart: View {
                 Text(Fmt.percent(total == 0 ? 0 : summaries.filter { $0.name != AssetCategory.cash.rawValue }.reduce(0) { $0 + $1.value } / total, signed: false))
                     .font(.system(size: 20, weight: .semibold, design: .rounded))
                     .monospacedDigit()
-                Text("持仓占比")
+                Text(T("持仓占比"))
                     .font(.system(size: 8.5))
                     .foregroundStyle(.tertiary)
             }
@@ -643,11 +648,13 @@ private struct ReviewPreviewRow: View {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 7) {
                         Pill(text: review.moodLabel, tint: moodTint, filled: false)
-                        Text(review.trigger.isEmpty ? "当日记录" : review.trigger)
+                        Text(review.trigger.isEmpty ? T("当日记录") : review.trigger)
                             .font(.system(size: 12, weight: .semibold))
                             .lineLimit(1)
                     }
-                    Text(review.nextPlan.isEmpty ? (review.market.isEmpty ? "还没有写下一步。" : review.market) : "下一步：\(review.nextPlan)")
+                    Text(review.nextPlan.isEmpty
+                         ? (review.market.isEmpty ? T("还没有写下一步。") : review.market)
+                         : T("下一步：%@", review.nextPlan))
                         .font(.system(size: 11))
                         .foregroundStyle(.secondary)
                         .lineLimit(2)
@@ -672,6 +679,9 @@ private struct ReviewPreviewRow: View {
 
     private var monthString: String {
         guard let date = DateFmt.iso.date(from: review.date) else { return "" }
+        if Lang.isEnglish {
+            return date.formatted(.dateTime.month(.abbreviated))
+        }
         return "\(Calendar.current.component(.month, from: date))月"
     }
 

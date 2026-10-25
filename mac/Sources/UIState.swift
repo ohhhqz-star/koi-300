@@ -13,12 +13,12 @@ enum SidebarSection: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .overview: return "概览"
-        case .holdings: return "当前持仓"
-        case .trades: return "操作记录"
-        case .reviews: return "每日复盘"
-        case .plans: return "定投计划"
-        case .data: return "数据与导出"
+        case .overview: return T("概览")
+        case .holdings: return T("当前持仓")
+        case .trades: return T("操作记录")
+        case .reviews: return T("每日复盘")
+        case .plans: return T("定投计划")
+        case .data: return T("数据与导出")
         }
     }
 

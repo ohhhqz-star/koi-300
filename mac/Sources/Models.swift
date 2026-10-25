@@ -10,6 +10,8 @@ enum AssetCategory: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
+    var displayName: String { T(rawValue) }
+
     var symbol: String {
         switch self {
         case .offExchange: return "building.columns"
@@ -30,6 +32,7 @@ enum AssetStatus: String, CaseIterable, Identifiable {
     case needsUpdate = "待更新"
 
     var id: String { rawValue }
+    var displayName: String { T(rawValue) }
 }
 
 enum TradeAction: String, CaseIterable, Identifiable {
@@ -40,6 +43,7 @@ enum TradeAction: String, CaseIterable, Identifiable {
     case dividend = "分红"
 
     var id: String { rawValue }
+    var displayName: String { T(rawValue) }
 
     var colorName: String {
         switch self {
@@ -60,6 +64,8 @@ enum Frequency: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
+    var displayName: String { T(rawValue) }
+
     func monthlyEstimate(_ amount: Double) -> Double {
         switch self {
         case .monthly: return amount
@@ -78,6 +84,8 @@ enum PlanStatus: String, CaseIterable, Identifiable {
     case finished = "已结束"
 
     var id: String { rawValue }
+
+    var displayName: String { T(rawValue) }
 
     var isInvesting: Bool { self == .active }
 }
@@ -240,11 +248,11 @@ struct DailyReview: Identifiable, Codable, Hashable {
 
     var moodLabel: String {
         switch mood {
-        case 1: return "很差"
-        case 2: return "偏低"
-        case 3: return "一般"
-        case 4: return "不错"
-        default: return "很好"
+        case 1: return T("很差")
+        case 2: return T("偏低")
+        case 3: return T("一般")
+        case 4: return T("不错")
+        default: return T("很好")
         }
     }
 }
@@ -353,12 +361,12 @@ enum Record300 {
 
     static func stage(_ count: Int) -> String {
         switch count {
-        case 0: return "第一笔，从今天开始"
-        case 1..<30: return "先观察自己"
-        case 30..<100: return "节奏正在出现"
-        case 100..<200: return "纪律开始成形"
-        case 200..<goal: return "风格就在附近"
-        default: return "风格已自成一套"
+        case 0: return T("第一笔，从今天开始")
+        case 1..<30: return T("先观察自己")
+        case 30..<100: return T("节奏正在出现")
+        case 100..<200: return T("纪律开始成形")
+        case 200..<goal: return T("风格就在附近")
+        default: return T("风格已自成一套")
         }
     }
 }
@@ -372,26 +380,29 @@ enum DateFmt {
         return f
     }()
 
-    static let chinese: DateFormatter = {
-        let f = DateFormatter()
-        f.locale = Locale(identifier: "zh_CN")
-        f.dateFormat = "yyyy年M月d日 EEEE"
-        return f
-    }()
+    private static var localizedCache: [String: DateFormatter] = [:]
 
-    static let chineseShort: DateFormatter = {
+    private static func localized(_ key: String, zh: String, en: String) -> DateFormatter {
+        let cacheKey = "\(Lang.current.rawValue)-\(key)"
+        if let cached = localizedCache[cacheKey] { return cached }
         let f = DateFormatter()
-        f.locale = Locale(identifier: "zh_CN")
-        f.dateFormat = "M月d日"
+        f.locale = Locale(identifier: Lang.isEnglish ? "en_US" : "zh_CN")
+        f.dateFormat = Lang.isEnglish ? en : zh
+        localizedCache[cacheKey] = f
         return f
-    }()
+    }
 
-    static let dateTimeChinese: DateFormatter = {
-        let f = DateFormatter()
-        f.locale = Locale(identifier: "zh_CN")
-        f.dateFormat = "yyyy年M月d日 HH:mm"
-        return f
-    }()
+    static var chinese: DateFormatter {
+        localized("long", zh: "yyyy年M月d日 EEEE", en: "EEEE, MMMM d, yyyy")
+    }
+
+    static var chineseShort: DateFormatter {
+        localized("short", zh: "M月d日", en: "MMM d")
+    }
+
+    static var dateTimeChinese: DateFormatter {
+        localized("datetime", zh: "yyyy年M月d日 HH:mm", en: "MMM d, yyyy HH:mm")
+    }
 
     static let timestamp: DateFormatter = {
         let f = DateFormatter()

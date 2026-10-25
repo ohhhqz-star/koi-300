@@ -43,10 +43,10 @@ struct TradesView: View {
     var body: some View {
         VStack(spacing: 16) {
             PageHeader(
-                "操作记录",
-                subtitle: "\(store.data.trades.count) 笔　·　操作只用于复盘，不会自动回写持仓成本"
+                T("操作记录"),
+                subtitle: T("%d 笔　·　操作只用于复盘，不会自动回写持仓成本", store.data.trades.count)
             ) {
-                Button("记一笔操作") { ui.modal = .trade(nil) }
+                Button(T("记一笔操作")) { ui.modal = .trade(nil) }
                     .buttonStyle(PrimaryButtonStyle(compact: true))
             }
 
@@ -54,9 +54,9 @@ struct TradesView: View {
                 Card {
                     EmptyState(
                         icon: "arrow.left.arrow.right",
-                        title: "还没有操作记录",
-                        message: "每一笔买入、卖出、定投或转换，都值得留下当时的理由和情绪。以后回看，原因往往比结果更重要。",
-                        actionTitle: "记下第一笔",
+                        title: T("还没有操作记录"),
+                        message: T("每一笔买入、卖出、定投或转换，都值得留下当时的理由和情绪。以后回看，原因往往比结果更重要。"),
+                        actionTitle: T("记下第一笔"),
                         action: { ui.modal = .trade(nil) }
                     )
                     .frame(maxWidth: .infinity, minHeight: 300)
@@ -88,29 +88,29 @@ struct TradesView: View {
             }
         }
         .alert(
-            "删除这条操作记录？",
+            T("删除这条操作记录？"),
             isPresented: Binding(
                 get: { pendingDelete != nil },
                 set: { if !$0 { pendingDelete = nil } }
             )
         ) {
-            Button("取消", role: .cancel) { pendingDelete = nil }
-            Button("删除", role: .destructive) {
+            Button(T("取消"), role: .cancel) { pendingDelete = nil }
+            Button(T("删除"), role: .destructive) {
                 if let pendingDelete {
                     store.deleteTrade(id: pendingDelete.id)
                     if selectedID == pendingDelete.id { selectedID = nil }
-                    ui.showToast(title: "已删除操作记录", message: pendingDelete.name)
+                    ui.showToast(title: T("已删除操作记录"), message: pendingDelete.name)
                 }
                 pendingDelete = nil
             }
         } message: {
-            Text("删除只影响这条记录，不会改变当前持仓。")
+            Text(T("删除只影响这条记录，不会改变当前持仓。"))
         }
     }
 
     private var filterBar: some View {
         HStack(spacing: 10) {
-            SearchField(placeholder: "搜索名称、代码或理由", text: $search)
+            SearchField(placeholder: T("搜索名称、代码或理由"), text: $search)
                 .frame(width: 250)
 
             FilterMenu(
@@ -127,7 +127,7 @@ struct TradesView: View {
 
             Spacer()
 
-            Text("显示 \(filteredTrades.count) 笔")
+            Text(T("显示 %d 笔", filteredTrades.count))
                 .font(.system(size: 10.5))
                 .foregroundStyle(.tertiary)
         }
@@ -138,16 +138,16 @@ struct TradesView: View {
     private var tradesTable: some View {
         ZStack {
             Table(filteredTrades, selection: $selectedID) {
-                TableColumn("日期") { trade in
+                TableColumn(T("日期")) { trade in
                     Text(trade.date)
                         .font(.system(size: 11, design: .monospaced))
                         .foregroundStyle(.secondary)
                 }
                 .width(min: 80, ideal: 92, max: 104)
 
-                TableColumn("名称 / 代码") { trade in
+                TableColumn(T("名称 / 代码")) { trade in
                     VStack(alignment: .leading, spacing: 1) {
-                        Text(trade.name.isEmpty ? "未填写名称" : trade.name)
+                        Text(trade.name.isEmpty ? T("未填写名称") : trade.name)
                             .font(.system(size: 12.5, weight: .medium))
                             .lineLimit(1)
                         Text(trade.code.isEmpty ? "—" : trade.code)
@@ -157,12 +157,12 @@ struct TradesView: View {
                 }
                 .width(min: 140, ideal: 190, max: 260)
 
-                TableColumn("操作") { trade in
-                    Pill(text: trade.action, tint: actionColor(trade.action))
+                TableColumn(T("操作")) { trade in
+                    Pill(text: T(trade.action), tint: actionColor(trade.action))
                 }
                 .width(min: 56, ideal: 64, max: 76)
 
-                TableColumn("金额") { trade in
+                TableColumn(T("金额")) { trade in
                     HStack {
                         Spacer()
                         Text(trade.amount.map { Fmt.money($0) } ?? "—")
@@ -172,7 +172,7 @@ struct TradesView: View {
                 }
                 .width(min: 84, ideal: 96, max: 120)
 
-                TableColumn("操作理由") { trade in
+                TableColumn(T("操作理由")) { trade in
                     Text(trade.reason.isEmpty ? "—" : trade.reason)
                         .font(.system(size: 11.5))
                         .foregroundStyle(trade.reason.isEmpty ? .tertiary : .secondary)
@@ -180,7 +180,7 @@ struct TradesView: View {
                 }
                 .width(min: 160, ideal: 260, max: 420)
 
-                TableColumn("当时情绪") { trade in
+                TableColumn(T("当时情绪")) { trade in
                     Text(trade.mood.isEmpty ? "—" : trade.mood)
                         .font(.system(size: 11))
                         .foregroundStyle(.secondary)
@@ -188,8 +188,8 @@ struct TradesView: View {
                 }
                 .width(min: 70, ideal: 90, max: 120)
 
-                TableColumn("按计划？") { trade in
-                    Text(trade.followedPlan.isEmpty ? "—" : trade.followedPlan)
+                TableColumn(T("按计划？")) { trade in
+                    Text(trade.followedPlan.isEmpty ? "—" : T(trade.followedPlan))
                         .font(.system(size: 11))
                         .foregroundStyle(.secondary)
                 }
@@ -199,9 +199,9 @@ struct TradesView: View {
             .scrollContentBackground(.hidden)
             .contextMenu(forSelectionType: UUID.self) { selection in
                 if let id = selection.first, let trade = store.data.trades.first(where: { $0.id == id }) {
-                    Button("编辑操作…") { ui.modal = .trade(trade) }
+                    Button(T("编辑操作…")) { ui.modal = .trade(trade) }
                     Divider()
-                    Button("删除操作", role: .destructive) { pendingDelete = trade }
+                    Button(T("删除操作"), role: .destructive) { pendingDelete = trade }
                 }
             } primaryAction: { selection in
                 if let id = selection.first, let trade = store.data.trades.first(where: { $0.id == id }) {
@@ -215,10 +215,10 @@ struct TradesView: View {
                     Image(systemName: "line.3.horizontal.decrease.circle")
                         .font(.system(size: 22, weight: .light))
                         .foregroundStyle(Palette.gold.opacity(0.8))
-                    Text("没有匹配的操作")
+                    Text(T("没有匹配的操作"))
                         .font(.system(size: 12.5, weight: .medium))
                         .foregroundStyle(.secondary)
-                    Button("清除筛选") {
+                    Button(T("清除筛选")) {
                         search = ""
                         actionFilter = "全部操作"
                         accountFilter = "全部账户"
@@ -246,34 +246,34 @@ struct TradesView: View {
             if let trade = selectedTrade {
                 VStack(alignment: .leading, spacing: 3) {
                     HStack(spacing: 7) {
-                        Text(trade.name.isEmpty ? "未命名操作" : trade.name)
+                        Text(trade.name.isEmpty ? T("未命名操作") : trade.name)
                             .font(.system(size: 12, weight: .semibold))
-                        Pill(text: trade.action, tint: actionColor(trade.action))
+                        Pill(text: T(trade.action), tint: actionColor(trade.action))
                     }
-                    Text(trade.reason.isEmpty ? "还没有写操作理由。" : trade.reason)
+                    Text(trade.reason.isEmpty ? T("还没有写操作理由。") : trade.reason)
                         .font(.system(size: 10.5))
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
                 Spacer()
                 if !trade.market.isEmpty {
-                    Text("市场：\(trade.market)")
+                    Text(T("市场：%@", trade.market))
                         .font(.system(size: 10.5))
                         .foregroundStyle(.tertiary)
                         .lineLimit(1)
                         .frame(maxWidth: 220, alignment: .trailing)
                 }
-                Button("编辑") { ui.modal = .trade(trade) }
+                Button(T("编辑")) { ui.modal = .trade(trade) }
                     .buttonStyle(SecondaryButtonStyle(compact: true))
             } else {
-                Text("共 \(filteredTrades.count) 笔")
+                Text(T("共 %d 笔", filteredTrades.count))
                     .font(.system(size: 11.5, weight: .medium))
                     .foregroundStyle(.secondary)
                 Spacer()
-                footerMetric("买入 / 定投", Fmt.money(buyTotal))
-                footerMetric("卖出", Fmt.money(sellTotal))
-                footerMetric("已实现盈亏", Fmt.money(realizedTotal, signed: true), color: Palette.pnl(realizedTotal))
-                Text("双击一行可编辑")
+                footerMetric(T("买入 / 定投"), Fmt.money(buyTotal))
+                footerMetric(T("卖出"), Fmt.money(sellTotal))
+                footerMetric(T("已实现盈亏"), Fmt.money(realizedTotal, signed: true), color: Palette.pnl(realizedTotal))
+                Text(T("双击一行可编辑"))
                     .font(.system(size: 10))
                     .foregroundStyle(.tertiary)
                     .padding(.leading, 6)
@@ -347,8 +347,8 @@ struct TradeEditorView: View {
 
     var body: some View {
         SheetChrome(
-            title: trade == nil ? "记一笔操作" : "编辑操作",
-            subtitle: "先记事实，再记为什么；操作记录不会自动改持仓。",
+            title: trade == nil ? T("记一笔操作") : T("编辑操作"),
+            subtitle: T("先记事实，再记为什么；操作记录不会自动改持仓。"),
             onCancel: { dismiss() },
             onSave: save,
             onDelete: trade == nil ? nil : { showDeleteConfirm = true }
@@ -369,8 +369,8 @@ struct TradeEditorView: View {
                         )
                 }
 
-                FormSection(title: "基本信息") {
-                    FormRow(label: "日期") {
+                FormSection(title: T("基本信息")) {
+                    FormRow(label: T("日期")) {
                         HStack {
                             DatePicker("", selection: $date, in: ...Date(), displayedComponents: .date)
                                 .labelsHidden()
@@ -381,9 +381,9 @@ struct TradeEditorView: View {
                                 .foregroundStyle(.tertiary)
                         }
                     }
-                    FormRow(label: "从未持仓带入") {
+                    FormRow(label: T("从持仓带入")) {
                         StyledPicker(
-                            options: [(title: "手动填写", value: "")] + store.data.assets.map {
+                            options: [(title: T("手动填写"), value: "")] + store.data.assets.map {
                                 (title: "\($0.name) · \($0.account)", value: $0.id.uuidString)
                             },
                             selection: $linkID
@@ -397,9 +397,9 @@ struct TradeEditorView: View {
                             name = asset.name
                         }
                     }
-                    FormRow(label: "账户") {
+                    FormRow(label: T("账户")) {
                         HStack(spacing: 7) {
-                            BareTextField(placeholder: "账户", text: $account)
+                            BareTextField(placeholder: T("账户"), text: $account)
                             Menu {
                                 ForEach(store.accounts, id: \.self) { item in
                                     Button(item) { account = item }
@@ -418,77 +418,77 @@ struct TradeEditorView: View {
                         }
                     }
                     HStack(alignment: .top, spacing: 16) {
-                        FormColumn(label: "类别") {
+                        FormColumn(label: T("类别")) {
                             StyledPicker(
-                                options: AssetCategory.allCases.map { (title: $0.rawValue, value: $0.rawValue) },
+                                options: AssetCategory.allCases.map { (title: $0.displayName, value: $0.rawValue) },
                                 selection: $category
                             )
                         }
-                        FormColumn(label: "操作") {
+                        FormColumn(label: T("操作")) {
                             StyledPicker(
-                                options: TradeAction.allCases.map { (title: $0.rawValue, value: $0.rawValue) },
+                                options: TradeAction.allCases.map { (title: $0.displayName, value: $0.rawValue) },
                                 selection: $tradeAction
                             )
                         }
                     }
                     HStack(alignment: .top, spacing: 16) {
-                        FormColumn(label: "代码") {
-                            BareTextField(placeholder: "代码", text: $code, monospaced: true)
+                        FormColumn(label: T("代码")) {
+                            BareTextField(placeholder: T("代码"), text: $code, monospaced: true)
                         }
-                        FormColumn(label: "名称") {
-                            BareTextField(placeholder: "名称 / 标的", text: $name)
+                        FormColumn(label: T("名称")) {
+                            BareTextField(placeholder: T("名称 / 标的"), text: $name)
                         }
                     }
                 }
 
-                FormSection(title: "金额与费用") {
+                FormSection(title: T("金额与费用")) {
                     HStack(alignment: .top, spacing: 16) {
-                        FormColumn(label: "金额（元）") {
+                        FormColumn(label: T("金额（元）")) {
                             BareTextField(placeholder: "0.00", text: $amountText, monospaced: true)
                         }
-                        FormColumn(label: "份额") {
+                        FormColumn(label: T("份额")) {
                             BareTextField(placeholder: "—", text: $sharesText, monospaced: true)
                         }
                     }
                     HStack(alignment: .top, spacing: 16) {
-                        FormColumn(label: "成交价 / 净值") {
+                        FormColumn(label: T("成交价 / 净值")) {
                             BareTextField(placeholder: "—", text: $priceText, monospaced: true)
                         }
-                        FormColumn(label: "手续费") {
+                        FormColumn(label: T("手续费")) {
                             BareTextField(placeholder: "0.00", text: $feeText, monospaced: true)
                         }
-                        FormColumn(label: "已实现盈亏") {
-                            BareTextField(placeholder: "仅卖出 / 分红", text: $realizedText, monospaced: true)
+                        FormColumn(label: T("已实现盈亏")) {
+                            BareTextField(placeholder: T("仅卖出 / 分红"), text: $realizedText, monospaced: true)
                         }
                     }
                 }
 
-                FormSection(title: "当时的判断") {
-                    FormColumn(label: "操作理由") {
-                        BareTextEditor(placeholder: "为什么这个时候买 / 卖 / 停？", text: $reason, minHeight: 62)
+                FormSection(title: T("当时的判断")) {
+                    FormColumn(label: T("操作理由")) {
+                        BareTextEditor(placeholder: T("为什么这个时候买 / 卖 / 停？"), text: $reason, minHeight: 62)
                     }
                     HStack(alignment: .top, spacing: 16) {
-                        FormColumn(label: "当时情绪") {
-                            BareTextField(placeholder: "例如：着急、怕错过、平静", text: $mood)
+                        FormColumn(label: T("当时情绪")) {
+                            BareTextField(placeholder: T("例如：着急、怕错过、平静"), text: $mood)
                         }
-                        FormColumn(label: "按计划？") {
+                        FormColumn(label: T("按计划？")) {
                             StyledPicker(
-                                options: ["是", "部分", "否", "待复盘"].map { (title: $0, value: $0) },
+                                options: ["是", "部分", "否", "待复盘"].map { (title: T($0), value: $0) },
                                 selection: $followedPlan
                             )
                         }
                     }
-                    FormColumn(label: "市场 / 消息面") {
-                        BareTextEditor(placeholder: "当时发生了什么？", text: $market, minHeight: 54)
+                    FormColumn(label: T("市场 / 消息面")) {
+                        BareTextEditor(placeholder: T("当时发生了什么？"), text: $market, minHeight: 54)
                     }
                 }
 
-                FormSection(title: "事后复盘") {
-                    FormColumn(label: "结果复盘") {
-                        BareTextEditor(placeholder: "这笔操作后来怎么样了？可以过几天补。", text: $review, minHeight: 56)
+                FormSection(title: T("事后复盘")) {
+                    FormColumn(label: T("结果复盘")) {
+                        BareTextEditor(placeholder: T("这笔操作后来怎么样了？可以过几天补。"), text: $review, minHeight: 56)
                     }
-                    FormColumn(label: "教训 / 下次") {
-                        BareTextEditor(placeholder: "如果重来一次，你会怎么做？", text: $lesson, minHeight: 56)
+                    FormColumn(label: T("教训 / 下次")) {
+                        BareTextEditor(placeholder: T("如果重来一次，你会怎么做？"), text: $lesson, minHeight: 56)
                     }
                 }
             }
@@ -499,24 +499,24 @@ struct TradeEditorView: View {
                 account = first
             }
         }
-        .alert("删除这条操作记录？", isPresented: $showDeleteConfirm) {
-            Button("取消", role: .cancel) {}
-            Button("删除", role: .destructive) {
+        .alert(T("删除这条操作记录？"), isPresented: $showDeleteConfirm) {
+            Button(T("取消"), role: .cancel) {}
+            Button(T("删除"), role: .destructive) {
                 if let trade {
                     store.deleteTrade(id: trade.id)
-                    ui.showToast(title: "已删除操作记录", message: trade.name)
+                    ui.showToast(title: T("已删除操作记录"), message: trade.name)
                 }
                 dismiss()
             }
         } message: {
-            Text("删除只影响这条记录，不会改变当前持仓。")
+            Text(T("删除只影响这条记录，不会改变当前持仓。"))
         }
     }
 
     private func save() {
         errorText = nil
         guard !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            errorText = "请填写名称，或从上面的持仓中选择一个标的。"
+            errorText = T("请填写名称，或从上面的持仓中选择一个标的。")
             return
         }
 
@@ -534,7 +534,7 @@ struct TradeEditorView: View {
         ]
         for (label, text, parsed) in checks {
             if !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, parsed == nil {
-                errorText = "\(label)需要填写数字，或留空。"
+                errorText = T("%@需要填写数字，或留空。", T(label))
                 return
             }
         }
@@ -543,7 +543,7 @@ struct TradeEditorView: View {
         ]
         for (label, value) in nonNegative {
             if let value, value < 0 {
-                errorText = "\(label)不能为负数。"
+                errorText = T("%@不能为负数。", T(label))
                 return
             }
         }
@@ -570,7 +570,7 @@ struct TradeEditorView: View {
             createdAt: trade?.createdAt ?? Date()
         )
         store.upsertTrade(created)
-        ui.showToast(title: trade == nil ? "操作已记录" : "操作已更新", message: created.name)
+        ui.showToast(title: trade == nil ? T("操作已记录") : T("操作已更新"), message: created.name)
         dismiss()
     }
 }

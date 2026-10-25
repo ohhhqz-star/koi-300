@@ -34,10 +34,10 @@ struct HoldingsView: View {
     var body: some View {
         VStack(spacing: 16) {
             PageHeader(
-                "当前持仓",
-                subtitle: "\(store.data.assets.count) 条资产　·　只维护成本与市值，盈亏自动计算　·　金额单位：元"
+                T("当前持仓"),
+                subtitle: T("%d 条资产　·　只维护成本与市值，盈亏自动计算　·　金额单位：元", store.data.assets.count)
             ) {
-                Button("新增持仓") { ui.modal = .asset(nil) }
+                Button(T("新增持仓")) { ui.modal = .asset(nil) }
                     .buttonStyle(PrimaryButtonStyle(compact: true))
             }
 
@@ -65,23 +65,23 @@ struct HoldingsView: View {
             }
         }
         .alert(
-            "删除这条持仓？",
+            T("删除这条持仓？"),
             isPresented: Binding(
                 get: { pendingDelete != nil },
                 set: { if !$0 { pendingDelete = nil } }
             )
         ) {
-            Button("取消", role: .cancel) { pendingDelete = nil }
-            Button("删除", role: .destructive) {
+            Button(T("取消"), role: .cancel) { pendingDelete = nil }
+            Button(T("删除"), role: .destructive) {
                 if let pendingDelete {
                     store.deleteAsset(id: pendingDelete.id)
                     if selectedID == pendingDelete.id { selectedID = nil }
-                    ui.showToast(title: "已删除持仓", message: pendingDelete.name)
+                    ui.showToast(title: T("已删除持仓"), message: pendingDelete.name)
                 }
                 pendingDelete = nil
             }
         } message: {
-            Text("删除后今天的净值快照会同步更新。此操作不会影响操作记录。")
+            Text(T("删除后今天的净值快照会同步更新。此操作不会影响操作记录。"))
         }
     }
 
@@ -104,7 +104,7 @@ struct HoldingsView: View {
 
             Spacer()
 
-            Text("显示 \(filteredAssets.count) 条")
+            Text(T("显示 %d 条", filteredAssets.count))
                 .font(.system(size: 10.5))
                 .foregroundStyle(.tertiary)
         }
@@ -115,19 +115,19 @@ struct HoldingsView: View {
     private var assetTable: some View {
         ZStack {
             Table(filteredAssets, selection: $selectedID) {
-                TableColumn("名称 / 代码") { asset in
+                TableColumn(T("名称 / 代码")) { asset in
                 VStack(alignment: .leading, spacing: 1) {
                     Text(asset.name)
                         .font(.system(size: 12.5, weight: .medium))
                         .lineLimit(1)
-                    Text(asset.code == "—" ? "现金 / 无代码" : asset.code)
+                    Text(asset.code == "—" ? T("现金 / 无代码") : asset.code)
                         .font(.system(size: 9.5, design: .monospaced))
                         .foregroundStyle(.tertiary)
                 }
             }
             .width(min: 150, ideal: 210, max: 300)
 
-            TableColumn("账户") { asset in
+            TableColumn(T("账户")) { asset in
                 Text(asset.account)
                     .font(.system(size: 11.5))
                     .foregroundStyle(.secondary)
@@ -135,8 +135,8 @@ struct HoldingsView: View {
             }
             .width(min: 85, ideal: 112, max: 150)
 
-            TableColumn("类别") { asset in
-                Text(asset.category)
+            TableColumn(T("类别")) { asset in
+                Text(T(asset.category))
                     .font(.system(size: 10.5))
                     .foregroundStyle(.secondary)
                     .padding(.horizontal, 6)
@@ -148,27 +148,27 @@ struct HoldingsView: View {
             }
             .width(min: 66, ideal: 78, max: 90)
 
-            TableColumn("投入成本") { asset in
+            TableColumn(T("投入成本")) { asset in
                 tableNumber(Fmt.money(asset.cost))
             }
             .width(min: 78, ideal: 92, max: 110)
 
-            TableColumn("当前市值") { asset in
+            TableColumn(T("当前市值")) { asset in
                 tableNumber(Fmt.money(asset.value), weight: .medium)
             }
             .width(min: 78, ideal: 92, max: 110)
 
-            TableColumn("浮动盈亏") { asset in
+            TableColumn(T("浮动盈亏")) { asset in
                 tableNumber(Fmt.money(asset.pnl, signed: true), color: Palette.pnl(asset.pnl), weight: .medium)
             }
             .width(min: 82, ideal: 92, max: 110)
 
-            TableColumn("盈亏率") { asset in
+            TableColumn(T("盈亏率")) { asset in
                 tableNumber(Fmt.percent(asset.pnlRate), color: Palette.pnl(asset.pnl), weight: .medium)
             }
             .width(min: 62, ideal: 72, max: 86)
 
-            TableColumn("仓位") { asset in
+            TableColumn(T("仓位")) { asset in
                 tableNumber(Fmt.percent(store.allocation(of: asset), signed: false), color: .secondary)
             }
             .width(min: 52, ideal: 60, max: 72)
@@ -177,9 +177,9 @@ struct HoldingsView: View {
         .scrollContentBackground(.hidden)
         .contextMenu(forSelectionType: UUID.self) { selection in
             if let id = selection.first, let asset = store.data.assets.first(where: { $0.id == id }) {
-                Button("编辑持仓…") { ui.modal = .asset(asset) }
+                Button(T("编辑持仓…")) { ui.modal = .asset(asset) }
                 Divider()
-                Button("删除持仓", role: .destructive) { pendingDelete = asset }
+                Button(T("删除持仓"), role: .destructive) { pendingDelete = asset }
             }
         } primaryAction: { selection in
             if let id = selection.first, let asset = store.data.assets.first(where: { $0.id == id }) {
@@ -194,11 +194,11 @@ struct HoldingsView: View {
                     Image(systemName: hasActiveFilters ? "line.3.horizontal.decrease.circle" : "chart.pie")
                         .font(.system(size: 22, weight: .light))
                         .foregroundStyle(Palette.gold.opacity(0.8))
-                    Text(hasActiveFilters ? "没有匹配的持仓" : "还没有持仓记录")
+                    Text(hasActiveFilters ? T("没有匹配的持仓") : T("还没有持仓记录"))
                         .font(.system(size: 12.5, weight: .medium))
                         .foregroundStyle(.secondary)
                     if hasActiveFilters {
-                        Button("清除筛选") {
+                        Button(T("清除筛选")) {
                             search = ""
                             accountFilter = "全部账户"
                             categoryFilter = "全部类别"
@@ -207,7 +207,7 @@ struct HoldingsView: View {
                         .font(.system(size: 11.5, weight: .semibold))
                         .foregroundStyle(Palette.accent)
                     } else {
-                        Button("新增持仓") { ui.modal = .asset(nil) }
+                        Button(T("新增持仓")) { ui.modal = .asset(nil) }
                             .buttonStyle(PrimaryButtonStyle(compact: true))
                     }
                 }
@@ -240,28 +240,28 @@ struct HoldingsView: View {
                             .font(.system(size: 12, weight: .semibold))
                         Pill(text: asset.account, tint: Palette.accent)
                     }
-                    Text(asset.note.isEmpty ? "还没有写记录。" : asset.note)
+                    Text(asset.note.isEmpty ? T("还没有写记录。") : asset.note)
                         .font(.system(size: 10.5))
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
                 Spacer()
-                Text(asset.nextStep.isEmpty ? "未设置下一步" : "下一步：\(asset.nextStep)")
+                Text(asset.nextStep.isEmpty ? T("未设置下一步") : T("下一步：%@", asset.nextStep))
                     .font(.system(size: 10.5))
                     .foregroundStyle(.tertiary)
                     .lineLimit(1)
                     .frame(maxWidth: 230, alignment: .trailing)
-                Button("编辑") { ui.modal = .asset(asset) }
+                Button(T("编辑")) { ui.modal = .asset(asset) }
                     .buttonStyle(SecondaryButtonStyle(compact: true))
             } else {
-                Text("共 \(filteredAssets.count) 条")
+                Text(T("共 %d 条", filteredAssets.count))
                     .font(.system(size: 11.5, weight: .medium))
                     .foregroundStyle(.secondary)
                 Spacer()
-                footerMetric("成本", Fmt.money(filteredCost))
-                footerMetric("市值", Fmt.money(filteredValue))
-                footerMetric("浮盈亏", Fmt.money(filteredPnL, signed: true), color: Palette.pnl(filteredPnL))
-                Text("双击一行可编辑")
+                footerMetric(T("成本"), Fmt.money(filteredCost))
+                footerMetric(T("市值"), Fmt.money(filteredValue))
+                footerMetric(T("浮盈亏"), Fmt.money(filteredPnL, signed: true), color: Palette.pnl(filteredPnL))
+                Text(T("双击一行可编辑"))
                     .font(.system(size: 10))
                     .foregroundStyle(.tertiary)
                     .padding(.leading, 6)
@@ -327,8 +327,8 @@ struct AssetEditorView: View {
 
     var body: some View {
         SheetChrome(
-            title: asset == nil ? "新增持仓" : "编辑持仓",
-            subtitle: "账户 + 类别 + 金额，是这套记录的最小单位。",
+            title: asset == nil ? T("新增持仓") : T("编辑持仓"),
+            subtitle: T("账户 + 类别 + 金额，是这套记录的最小单位。"),
             canSave: true,
             onCancel: { dismiss() },
             onSave: save,
@@ -350,10 +350,10 @@ struct AssetEditorView: View {
                         )
                 }
 
-                FormSection(title: "标的信息") {
-                    FormRow(label: "账户") {
+                FormSection(title: T("标的信息")) {
+                    FormRow(label: T("账户")) {
                         HStack(spacing: 7) {
-                            BareTextField(placeholder: "例如：理财通-主账户", text: $account)
+                            BareTextField(placeholder: T("例如：理财通-主账户"), text: $account)
                             Menu {
                                 ForEach(store.accounts, id: \.self) { item in
                                     Button(item) { account = item }
@@ -371,32 +371,32 @@ struct AssetEditorView: View {
                             .fixedSize()
                         }
                     }
-                    FormRow(label: "类别") {
+                    FormRow(label: T("类别")) {
                         StyledPicker(
-                            options: AssetCategory.allCases.map { (title: $0.rawValue, value: $0.rawValue) },
+                            options: AssetCategory.allCases.map { (title: $0.displayName, value: $0.rawValue) },
                             selection: $category
                         )
                     }
-                    FormRow(label: "代码") {
-                        BareTextField(placeholder: "基金 / 股票代码，现金可填 —", text: $code, monospaced: true)
+                    FormRow(label: T("代码")) {
+                        BareTextField(placeholder: T("基金 / 股票代码，现金可填 —"), text: $code, monospaced: true)
                     }
-                    FormRow(label: "名称") {
-                        BareTextField(placeholder: "名称或标的", text: $name)
+                    FormRow(label: T("名称")) {
+                        BareTextField(placeholder: T("名称或标的"), text: $name)
                     }
                 }
 
-                FormSection(title: "金额与市值") {
+                FormSection(title: T("金额与市值")) {
                     HStack(alignment: .top, spacing: 16) {
-                        FormColumn(label: "投入成本（元）") {
+                        FormColumn(label: T("投入成本（元）")) {
                             BareTextField(placeholder: "0.00", text: $costText, monospaced: true)
                         }
-                        FormColumn(label: "当前市值（元）") {
+                        FormColumn(label: T("当前市值（元）")) {
                             BareTextField(placeholder: "0.00", text: $valueText, monospaced: true)
                         }
                     }
                     if let cost = parsedCost, let value = parsedValue {
                         HStack(spacing: 8) {
-                            Text("浮动盈亏")
+                            Text(T("浮动盈亏"))
                                 .font(.system(size: 11))
                                 .foregroundStyle(.secondary)
                             Text(Fmt.money(value - cost, signed: true))
@@ -415,30 +415,30 @@ struct AssetEditorView: View {
                     }
                 }
 
-                FormSection(title: "持仓明细（可选）") {
+                FormSection(title: T("持仓明细（可选）")) {
                     HStack(alignment: .top, spacing: 16) {
-                        FormColumn(label: "数量 / 份额") {
+                        FormColumn(label: T("数量 / 份额")) {
                             BareTextField(placeholder: "—", text: $unitsText, monospaced: true)
                         }
-                        FormColumn(label: "成本价 / 净值") {
+                        FormColumn(label: T("成本价 / 净值")) {
                             BareTextField(placeholder: "—", text: $costPriceText, monospaced: true)
                         }
-                        FormColumn(label: "现价 / 净值") {
+                        FormColumn(label: T("现价 / 净值")) {
                             BareTextField(placeholder: "—", text: $priceText, monospaced: true)
                         }
                     }
                 }
 
-                FormSection(title: "我的记录") {
-                    FormColumn(label: "为什么买 / 现状") {
-                        BareTextEditor(placeholder: "例如：前期赚，7月补仓，想拿一年以上。", text: $note)
+                FormSection(title: T("我的记录")) {
+                    FormColumn(label: T("为什么买 / 现状")) {
+                        BareTextEditor(placeholder: T("例如：前期赚，7月补仓，想拿一年以上。"), text: $note)
                     }
-                    FormColumn(label: "下一步 / 退出条件") {
-                        BareTextEditor(placeholder: "例如：持有满一年再评估；跌破某个条件就退出。", text: $nextStep)
+                    FormColumn(label: T("下一步 / 退出条件")) {
+                        BareTextEditor(placeholder: T("例如：持有满一年再评估；跌破某个条件就退出。"), text: $nextStep)
                     }
-                    FormRow(label: "数据状态") {
+                    FormRow(label: T("数据状态")) {
                         StyledPicker(
-                            options: AssetStatus.allCases.map { (title: $0.rawValue, value: $0.rawValue) },
+                            options: AssetStatus.allCases.map { (title: $0.displayName, value: $0.rawValue) },
                             selection: $dataStatus
                         )
                     }
@@ -451,17 +451,17 @@ struct AssetEditorView: View {
                 account = first
             }
         }
-        .alert("删除这条持仓？", isPresented: $showDeleteConfirm) {
-            Button("取消", role: .cancel) {}
-            Button("删除", role: .destructive) {
+        .alert(T("删除这条持仓？"), isPresented: $showDeleteConfirm) {
+            Button(T("取消"), role: .cancel) {}
+            Button(T("删除"), role: .destructive) {
                 if let asset {
                     store.deleteAsset(id: asset.id)
-                    ui.showToast(title: "已删除持仓", message: asset.name)
+                    ui.showToast(title: T("已删除持仓"), message: asset.name)
                 }
                 dismiss()
             }
         } message: {
-            Text("删除后今天的净值快照会同步更新。此操作不会影响操作记录。")
+            Text(T("删除后今天的净值快照会同步更新。此操作不会影响操作记录。"))
         }
     }
 
@@ -470,19 +470,19 @@ struct AssetEditorView: View {
         let trimmedAccount = account.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedAccount.isEmpty else {
-            errorText = "请填写账户。"
+            errorText = T("请填写账户。")
             return
         }
         guard !trimmedName.isEmpty else {
-            errorText = "请填写名称。"
+            errorText = T("请填写名称。")
             return
         }
         guard let cost = parsedCost, let value = parsedValue else {
-            errorText = "投入成本和当前市值需要填写数字。"
+            errorText = T("投入成本和当前市值需要填写数字。")
             return
         }
         guard cost >= 0, value >= 0 else {
-            errorText = "金额不能为负数。"
+            errorText = T("金额不能为负数。")
             return
         }
 
@@ -495,11 +495,11 @@ struct AssetEditorView: View {
             let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !trimmed.isEmpty else { continue }
             guard let parsed else {
-                errorText = "\(label)需要填写数字，或留空。"
+                errorText = T("%@需要填写数字，或留空。", T(label))
                 return
             }
             guard parsed >= 0 else {
-                errorText = "\(label)不能为负数。"
+                errorText = T("%@不能为负数。", T(label))
                 return
             }
         }
@@ -520,7 +520,7 @@ struct AssetEditorView: View {
             dataStatus: dataStatus
         )
         store.upsertAsset(created)
-        ui.showToast(title: asset == nil ? "持仓已添加" : "持仓已更新", message: trimmedName)
+        ui.showToast(title: asset == nil ? T("持仓已添加") : T("持仓已更新"), message: trimmedName)
         dismiss()
     }
 }

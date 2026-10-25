@@ -11,21 +11,21 @@ enum ExportRequest {
 
     var menuTitle: String {
         switch self {
-        case .excel: return "导出 Excel 工作簿…"
-        case .holdingsCSV: return "导出当前持仓 CSV…"
-        case .tradesCSV: return "导出操作记录 CSV…"
-        case .reviewsCSV: return "导出每日复盘 CSV…"
-        case .backupJSON: return "导出完整 JSON 备份…"
+        case .excel: return T("导出 Excel 工作簿…")
+        case .holdingsCSV: return T("导出当前持仓 CSV…")
+        case .tradesCSV: return T("导出操作记录 CSV…")
+        case .reviewsCSV: return T("导出每日复盘 CSV…")
+        case .backupJSON: return T("导出完整 JSON 备份…")
         }
     }
 
     var panelTitle: String {
         switch self {
-        case .excel: return "导出 Excel 工作簿"
-        case .holdingsCSV: return "导出当前持仓"
-        case .tradesCSV: return "导出操作记录"
-        case .reviewsCSV: return "导出每日复盘"
-        case .backupJSON: return "导出完整备份"
+        case .excel: return T("导出 Excel 工作簿")
+        case .holdingsCSV: return T("导出当前持仓")
+        case .tradesCSV: return T("导出操作记录")
+        case .reviewsCSV: return T("导出每日复盘")
+        case .backupJSON: return T("导出完整备份")
         }
     }
 
@@ -51,10 +51,10 @@ enum ExportRequest {
     func defaultName(date: String) -> String {
         switch self {
         case .excel: return "Koi300_\(date).xlsx"
-        case .holdingsCSV: return "Koi300_当前持仓_\(date).csv"
-        case .tradesCSV: return "Koi300_操作记录_\(date).csv"
-        case .reviewsCSV: return "Koi300_每日复盘_\(date).csv"
-        case .backupJSON: return "Koi300_完整备份_\(date).json"
+        case .holdingsCSV: return Lang.isEnglish ? "Koi300_Holdings_\(date).csv" : "Koi300_当前持仓_\(date).csv"
+        case .tradesCSV: return Lang.isEnglish ? "Koi300_Trades_\(date).csv" : "Koi300_操作记录_\(date).csv"
+        case .reviewsCSV: return Lang.isEnglish ? "Koi300_Reviews_\(date).csv" : "Koi300_每日复盘_\(date).csv"
+        case .backupJSON: return Lang.isEnglish ? "Koi300_Backup_\(date).json" : "Koi300_完整备份_\(date).json"
         }
     }
 }
@@ -66,7 +66,7 @@ enum ExportService {
     static func export(_ request: ExportRequest, data: AppData) throws -> URL? {
         let panel = NSSavePanel()
         panel.title = request.panelTitle
-        panel.prompt = "导出"
+        panel.prompt = T("导出")
         panel.nameFieldStringValue = request.defaultName(date: DateFmt.today())
         panel.allowedContentTypes = [request.contentType]
         panel.allowsOtherFileTypes = false
@@ -104,8 +104,8 @@ enum ExportService {
 
     static func chooseImportFile() -> URL? {
         let panel = NSOpenPanel()
-        panel.title = "选择投资复盘 JSON 备份"
-        panel.prompt = "读取备份"
+        panel.title = T("选择投资复盘 JSON 备份")
+        panel.prompt = T("读取备份")
         panel.allowedContentTypes = [.json]
         panel.allowsMultipleSelection = false
         panel.canChooseDirectories = false
@@ -145,13 +145,13 @@ func runExport(_ request: ExportRequest, store: AppStore, ui: AppUI) {
     do {
         guard let url = try ExportService.export(request, data: store.data) else { return }
         ui.showToast(
-            title: "已导出",
+            title: T("已导出"),
             message: url.lastPathComponent,
             folderURL: url.deletingLastPathComponent()
         )
     } catch {
         ui.showToast(
-            title: "导出失败",
+            title: T("导出失败"),
             message: error.localizedDescription,
             isError: true
         )
@@ -162,8 +162,8 @@ func runExport(_ request: ExportRequest, store: AppStore, ui: AppUI) {
 func runBackupNow(store: AppStore, ui: AppUI) {
     do {
         let url = try store.backupNow()
-        ui.showToast(title: "本地备份已创建", message: url.lastPathComponent, folderURL: url.deletingLastPathComponent())
+        ui.showToast(title: T("本地备份已创建"), message: url.lastPathComponent, folderURL: url.deletingLastPathComponent())
     } catch {
-        ui.showToast(title: "备份失败", message: error.localizedDescription, isError: true)
+        ui.showToast(title: T("备份失败"), message: error.localizedDescription, isError: true)
     }
 }

@@ -487,7 +487,7 @@
       state.saving = true;
       saveChain = saveChain.then(async () => {
         try {
-          const response = await fetch('api/data', {
+          const response = await fetch('/api/data', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body
@@ -523,7 +523,7 @@
     try {
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), 1200);
-      const response = await fetch('api/status', {
+      const response = await fetch('/api/status', {
         cache: 'no-store',
         headers: { Accept: 'application/json' },
         signal: controller.signal
@@ -538,10 +538,10 @@
       state.dataDir = status.dataDir || '';
       state.port = status.port || 4877;
       state.mtimeMs = status.mtimeMs || 0;
-      const dataResponse = await fetch('api/data', { cache: 'no-store' });
+      const dataResponse = await fetch('/api/data', { cache: 'no-store' });
       if (!dataResponse.ok) throw new Error('无法读取本地数据文件');
       state.data = normalizeData(await dataResponse.json());
-      const refreshed = await fetch('api/status', { cache: 'no-store' }).then((res) => res.json()).catch(() => null);
+      const refreshed = await fetch('/api/status', { cache: 'no-store' }).then((res) => res.json()).catch(() => null);
       if (refreshed && refreshed.mtimeMs) state.mtimeMs = refreshed.mtimeMs;
       return true;
     } catch {
@@ -2292,7 +2292,7 @@
   async function backupNow(showToast = true) {
     if (state.mode === 'file') {
       try {
-        const response = await fetch('api/backup', { method: 'POST' });
+        const response = await fetch('/api/backup', { method: 'POST' });
         const result = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(result.error || '备份失败');
         if (showToast) toast('已备份到本机', `data/backups/${result.name}`);
@@ -2309,7 +2309,7 @@
   function protectBeforeReplace() {
     exportJSON(true);
     if (state.mode === 'file') {
-      fetch('api/backup', { method: 'POST' }).catch(() => {});
+      fetch('/api/backup', { method: 'POST' }).catch(() => {});
     }
   }
 
@@ -2635,8 +2635,8 @@
     if (state.mode !== 'file') return retryFileMode();
     try {
       const [dataResponse, statusResponse] = await Promise.all([
-        fetch('api/data', { cache: 'no-store' }),
-        fetch('api/status', { cache: 'no-store' })
+        fetch('/api/data', { cache: 'no-store' }),
+        fetch('/api/status', { cache: 'no-store' })
       ]);
       if (!dataResponse.ok) throw new Error('无法读取数据文件');
       const status = await statusResponse.json();
@@ -2663,11 +2663,11 @@
       if (state.mode !== 'file' || document.hidden || state.saving) return;
       if ($('#modal-root .modal')) return;
       try {
-        const response = await fetch('api/status', { cache: 'no-store' });
+        const response = await fetch('/api/status', { cache: 'no-store' });
         if (!response.ok) return;
         const status = await response.json();
         if (!status.mtimeMs || status.mtimeMs === state.mtimeMs) return;
-        const dataResponse = await fetch('api/data', { cache: 'no-store' });
+        const dataResponse = await fetch('/api/data', { cache: 'no-store' });
         if (!dataResponse.ok) return;
         const next = normalizeData(await dataResponse.json());
         state.data = next;
@@ -2695,6 +2695,17 @@
 
   function bindEvents() {
     document.addEventListener('click', (event) => {
+      const langLink = event.target.closest('[data-lang]');
+      if (langLink) {
+        event.preventDefault();
+        const target = langLink.dataset.lang;
+        try { localStorage.setItem('koi300.lang', target); } catch { /* file:// may deny storage */ }
+        try {
+          document.cookie = `koi300.lang=${target}; path=/; max-age=31536000; SameSite=Lax`;
+        } catch { /* cookies may be blocked */ }
+        location.href = langLink.getAttribute('href') + location.hash;
+        return;
+      }
       const themeButton = event.target.closest('[data-theme-choice]');
       if (themeButton) {
         applyTheme(themeButton.dataset.themeChoice);

@@ -2,6 +2,8 @@
 
 The macOS app, the Windows app and the web version all share one JSON structure. You can move data between them by exporting and importing.
 
+[中文](DATA.zh-CN.md)
+
 ## Where the files are
 
 | Mode | Path |
@@ -43,7 +45,8 @@ The in-app "Data & export" page shows the actual path in use.
 - Amounts: JSON numbers in CNY.
 - P&L colours: red for gains, green for losses; display only, never stored.
 - 300 count: `trades.length + reviews.length`.
-- Enums: the Chinese desktop app writes Chinese values, the English web demo writes English ones. Both sides accept the other language and normalise on import, so a file can move between them without losing categories.
+- Enums: the Chinese UI writes Chinese values, the English UI writes English ones. Both sides accept the other language and normalise on import, so a file can move between them without losing categories. The alias tables are in `web/assets/app.js` and `site/assets/app.js` for the web side, and in `AppStore.enumAliases` (`mac/Sources/AppStore.swift`) on macOS; they must stay in sync.
+- Language: the interface language is never stored in the data file. macOS keeps it in `UserDefaults["app.language"]`; the browser and local-file modes use `localStorage["koi300.lang"]`. The web root (`/`) redirects to `/en/` or `/zh/` using that preference, then `Accept-Language`, then Chinese; both routes share the same data and API.
 
 > The native macOS app decodes with Swift's `.iso8601` strategy, so timestamps **must not include milliseconds**. The web and Windows versions strip milliseconds when writing.
 
@@ -53,7 +56,7 @@ The in-app "Data & export" page shows the actual path in use.
 | --- | --- | --- |
 | `id` | string | UUID |
 | `account` | string | Account name, e.g. "Long-term" |
-| `category` | string | `Fund (OTC)` / `场外基金`, `Fund (ETF)` / `场内基金`, `Stock` / `股票`, `Pension` / `养老金`, `Gold` / `黄金`, `Cash` / `现金` |
+| `category` | string | `Fund (OTC)` / `场外基金`, `Fund (ETF)` / `场内基金`, `Stock` / `股票`, `Pension` / `养老金`, `Gold` / `黄金`, `Cash` / `现金`. macOS also accepts `OTC fund`, `ETF`, `Off-exchange fund` and `Exchange-traded fund`, normalising them to the Chinese values. |
 | `code` | string | Fund or stock code; may be empty |
 | `name` | string | Name |
 | `cost` | number | Invested cost |

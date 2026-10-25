@@ -12,10 +12,10 @@ struct ReviewsView: View {
         ScrollView {
             VStack(spacing: 16) {
                 PageHeader(
-                    "每日复盘",
-                    subtitle: "\(store.data.reviews.count) 条记录　·　不用写长，3–5 行就够　·　先记事实，再记感受"
+                    T("每日复盘"),
+                    subtitle: T("%d 条记录　·　不用写长，3–5 行就够　·　先记事实，再记感受", store.data.reviews.count)
                 ) {
-                    Button(todayReview == nil ? "写今日复盘" : "继续今天") {
+                    Button(todayReview == nil ? T("写今日复盘") : T("继续今天")) {
                         ui.openTodayReview(store: store)
                     }
                     .buttonStyle(PrimaryButtonStyle(compact: true))
@@ -38,22 +38,22 @@ struct ReviewsView: View {
         }
         .background(PageBackground())
         .alert(
-            "删除这条复盘？",
+            T("删除这条复盘？"),
             isPresented: Binding(
                 get: { pendingDelete != nil },
                 set: { if !$0 { pendingDelete = nil } }
             )
         ) {
-            Button("取消", role: .cancel) { pendingDelete = nil }
-            Button("删除", role: .destructive) {
+            Button(T("取消"), role: .cancel) { pendingDelete = nil }
+            Button(T("删除"), role: .destructive) {
                 if let pendingDelete {
                     store.deleteReview(id: pendingDelete.id)
-                    ui.showToast(title: "已删除复盘", message: DateFmt.display(pendingDelete.date))
+                    ui.showToast(title: T("已删除复盘"), message: DateFmt.display(pendingDelete.date))
                 }
                 pendingDelete = nil
             }
         } message: {
-            Text("当天的净值快照会保留，不会随复盘一起删除。")
+            Text(T("当天的净值快照会保留，不会随复盘一起删除。"))
         }
     }
 
@@ -68,9 +68,9 @@ struct ReviewsView: View {
                         .background(Palette.accent.opacity(0.09))
                         .clipShape(RoundedRectangle(cornerRadius: 13, style: .continuous))
                     VStack(alignment: .leading, spacing: 5) {
-                        Text("今天只回答三个问题。")
+                        Text(T("今天只回答三个问题。"))
                             .font(.system(size: 19, weight: .semibold))
-                        Text("复盘不是写报告，是把当时的判断留下来。哪怕只有一句话。")
+                        Text(T("复盘不是写报告，是把当时的判断留下来。哪怕只有一句话。"))
                             .font(.system(size: 12))
                             .foregroundStyle(.secondary)
                     }
@@ -78,16 +78,16 @@ struct ReviewsView: View {
                 }
 
                 VStack(spacing: 10) {
-                    promptRow("01", "今天市场发生了什么？", "只写你真正看到、会影响判断的事。")
-                    promptRow("02", "你做了什么，为什么？", "操作、忍住没操作，都算。")
-                    promptRow("03", "下一步只做哪一件事？", "越具体越好，例如“明天不再补仓”。")
+                    promptRow("01", T("今天市场发生了什么？"), T("只写你真正看到、会影响判断的事。"))
+                    promptRow("02", T("你做了什么，为什么？"), T("操作、忍住没操作，都算。"))
+                    promptRow("03", T("下一步只做哪一件事？"), T("越具体越好，例如“明天不再补仓”。"))
                 }
 
                 HStack {
-                    Button("写今天的第一条") { ui.openTodayReview(store: store) }
+                    Button(T("写今天的第一条")) { ui.openTodayReview(store: store) }
                         .buttonStyle(PrimaryButtonStyle(compact: true))
                     Spacer()
-                    Text("保存时自动记录当日净值，方便以后回看。")
+                    Text(T("保存时自动记录当日净值，方便以后回看。"))
                         .font(.system(size: 10.5))
                         .foregroundStyle(.tertiary)
                 }
@@ -128,9 +128,9 @@ struct ReviewsView: View {
                         Text(DateFmt.display(review.date))
                             .font(.system(size: 15, weight: .semibold))
                         HStack(spacing: 7) {
-                            Pill(text: "心态 · \(review.moodLabel)", tint: moodTint(review.mood))
+                            Pill(text: T("心态 · %@", review.moodLabel), tint: moodTint(review.mood))
                             if let snapshot {
-                                Text("当日资产 \(Fmt.money(snapshot.value))")
+                                Text(T("当日资产 %@", Fmt.money(snapshot.value)))
                                     .font(.system(size: 10, design: .rounded))
                                     .monospacedDigit()
                                     .foregroundStyle(.tertiary)
@@ -138,18 +138,18 @@ struct ReviewsView: View {
                         }
                     }
                     Spacer()
-                    Button("编辑") { ui.modal = .review(review) }
+                    Button(T("编辑")) { ui.modal = .review(review) }
                         .buttonStyle(SecondaryButtonStyle(compact: true))
                     IconMenu {
-                        Button("编辑这条复盘…") { ui.modal = .review(review) }
+                        Button(T("编辑这条复盘…")) { ui.modal = .review(review) }
                         Divider()
-                        Button("删除这条复盘", role: .destructive) { pendingDelete = review }
+                        Button(T("删除这条复盘"), role: .destructive) { pendingDelete = review }
                     }
                 }
 
                 let fields = reviewFields(review)
                 if fields.isEmpty {
-                    Text("只记录了心情，也是一条记录。")
+                    Text(T("只记录了心情，也是一条记录。"))
                         .font(.system(size: 12))
                         .foregroundStyle(.tertiary)
                         .padding(.vertical, 3)
@@ -180,20 +180,20 @@ struct ReviewsView: View {
             }
         }
         .contextMenu {
-            Button("编辑复盘…") { ui.modal = .review(review) }
+            Button(T("编辑复盘…")) { ui.modal = .review(review) }
             Divider()
-            Button("删除复盘", role: .destructive) { pendingDelete = review }
+            Button(T("删除复盘"), role: .destructive) { pendingDelete = review }
         }
     }
 
     private func reviewFields(_ review: DailyReview) -> [ReviewField] {
         var fields: [ReviewField] = []
-        if !review.trigger.isEmpty { fields.append(ReviewField(label: "情绪 / 触发", value: review.trigger)) }
-        if !review.operations.isEmpty { fields.append(ReviewField(label: "今日操作", value: review.operations)) }
-        if !review.market.isEmpty { fields.append(ReviewField(label: "市场观察", value: review.market)) }
-        if !review.didRight.isEmpty { fields.append(ReviewField(label: "做对的事", value: review.didRight)) }
-        if !review.didWrong.isEmpty { fields.append(ReviewField(label: "做错的事 / 教训", value: review.didWrong)) }
-        if !review.nextPlan.isEmpty { fields.append(ReviewField(label: "下一步", value: review.nextPlan)) }
+        if !review.trigger.isEmpty { fields.append(ReviewField(label: T("情绪 / 触发"), value: review.trigger)) }
+        if !review.operations.isEmpty { fields.append(ReviewField(label: T("今日操作"), value: review.operations)) }
+        if !review.market.isEmpty { fields.append(ReviewField(label: T("市场观察"), value: review.market)) }
+        if !review.didRight.isEmpty { fields.append(ReviewField(label: T("做对的事"), value: review.didRight)) }
+        if !review.didWrong.isEmpty { fields.append(ReviewField(label: T("做错的事 / 教训"), value: review.didWrong)) }
+        if !review.nextPlan.isEmpty { fields.append(ReviewField(label: T("下一步"), value: review.nextPlan)) }
         return fields
     }
 
@@ -223,13 +223,18 @@ private struct DateBadge: View {
             Text("\(day)")
                 .font(.system(size: 21, weight: .semibold, design: .rounded))
                 .monospacedDigit()
-            Text("\(month) 月")
+            Text(monthLabel(month))
                 .font(.system(size: 8.5, weight: .medium))
                 .foregroundStyle(.tertiary)
         }
         .frame(width: 44, height: 46)
         .background(Palette.accent.opacity(0.07))
         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+    }
+
+    private func monthLabel(_ month: Int) -> String {
+        guard Lang.isEnglish, let value = DateFmt.iso.date(from: date) else { return "\(month) 月" }
+        return value.formatted(.dateTime.month(.abbreviated))
     }
 }
 
@@ -268,8 +273,8 @@ struct ReviewEditorView: View {
 
     var body: some View {
         SheetChrome(
-            title: review == nil ? "写今日复盘" : "编辑复盘",
-            subtitle: isToday ? "保存时会把今天的总资产记入净值快照。" : "补记过去的一天；当日净值不会自动补。",
+            title: review == nil ? T("写今日复盘") : T("编辑复盘"),
+            subtitle: isToday ? T("保存时会把今天的总资产记入净值快照。") : T("补记过去的一天；当日净值不会自动补。"),
             onCancel: { dismiss() },
             onSave: save,
             onDelete: review == nil ? nil : { showDeleteConfirm = true }
@@ -290,9 +295,9 @@ struct ReviewEditorView: View {
                         )
                 }
 
-                FormSection(title: "这一天") {
+                FormSection(title: T("这一天")) {
                     HStack(alignment: .top, spacing: 20) {
-                        FormColumn(label: "日期") {
+                        FormColumn(label: T("日期")) {
                             HStack {
                                 DatePicker("", selection: $date, in: ...Date(), displayedComponents: .date)
                                     .labelsHidden()
@@ -300,58 +305,58 @@ struct ReviewEditorView: View {
                                 Spacer()
                             }
                         }
-                        FormColumn(label: "心态") {
+                        FormColumn(label: T("心态")) {
                             MoodPicker(selection: $mood)
                         }
                     }
                 }
 
-                FormSection(title: "事实与感受") {
-                    FormColumn(label: "情绪 / 触发") {
-                        BareTextEditor(placeholder: "今天因为什么起了情绪？先描述事实。", text: $trigger, minHeight: 52)
+                FormSection(title: T("事实与感受")) {
+                    FormColumn(label: T("情绪 / 触发")) {
+                        BareTextEditor(placeholder: T("今天因为什么起了情绪？先描述事实。"), text: $trigger, minHeight: 52)
                     }
-                    FormColumn(label: "今日操作") {
-                        BareTextEditor(placeholder: "买了什么、卖了什么、或者忍住了没做什么。", text: $operations, minHeight: 52)
+                    FormColumn(label: T("今日操作")) {
+                        BareTextEditor(placeholder: T("买了什么、卖了什么、或者忍住了没做什么。"), text: $operations, minHeight: 52)
                     }
-                    FormColumn(label: "市场观察") {
-                        BareTextEditor(placeholder: "只看真正影响判断的信息。", text: $market, minHeight: 52)
+                    FormColumn(label: T("市场观察")) {
+                        BareTextEditor(placeholder: T("只看真正影响判断的信息。"), text: $market, minHeight: 52)
                     }
                 }
 
-                FormSection(title: "复盘与下一步") {
+                FormSection(title: T("复盘与下一步")) {
                     HStack(alignment: .top, spacing: 16) {
-                        FormColumn(label: "做对的事") {
-                            BareTextEditor(placeholder: "哪怕很小，也写下来。", text: $didRight, minHeight: 58)
+                        FormColumn(label: T("做对的事")) {
+                            BareTextEditor(placeholder: T("哪怕很小，也写下来。"), text: $didRight, minHeight: 58)
                         }
-                        FormColumn(label: "做错的事 / 教训") {
-                            BareTextEditor(placeholder: "下次怎么避免？", text: $didWrong, minHeight: 58)
+                        FormColumn(label: T("做错的事 / 教训")) {
+                            BareTextEditor(placeholder: T("下次怎么避免？"), text: $didWrong, minHeight: 58)
                         }
                     }
-                    FormColumn(label: "下一步只做一件事") {
-                        BareTextEditor(placeholder: "越具体越好，例如“明天不补仓，先看完这份复盘”。", text: $nextPlan, minHeight: 58)
+                    FormColumn(label: T("下一步只做一件事")) {
+                        BareTextEditor(placeholder: T("越具体越好，例如“明天不补仓，先看完这份复盘”。"), text: $nextPlan, minHeight: 58)
                     }
                 }
             }
         }
         .frame(width: 760, height: SheetFit.height(740))
-        .alert("删除这条复盘？", isPresented: $showDeleteConfirm) {
-            Button("取消", role: .cancel) {}
-            Button("删除", role: .destructive) {
+        .alert(T("删除这条复盘？"), isPresented: $showDeleteConfirm) {
+            Button(T("取消"), role: .cancel) {}
+            Button(T("删除"), role: .destructive) {
                 if let review {
                     store.deleteReview(id: review.id)
-                    ui.showToast(title: "已删除复盘", message: DateFmt.display(review.date))
+                    ui.showToast(title: T("已删除复盘"), message: DateFmt.display(review.date))
                 }
                 dismiss()
             }
         } message: {
-            Text("当天的净值快照会保留，不会随复盘一起删除。")
+            Text(T("当天的净值快照会保留，不会随复盘一起删除。"))
         }
     }
 
     private func save() {
         errorText = nil
         if store.reviewExists(on: dateString, excluding: review?.id) {
-            errorText = "这一天已经有一条复盘了。请直接编辑原来那条，避免覆盖。"
+            errorText = T("这一天已经有一条复盘了。请直接编辑原来那条，避免覆盖。")
             return
         }
 
@@ -368,7 +373,7 @@ struct ReviewEditorView: View {
             createdAt: review?.createdAt ?? Date()
         )
         store.upsertReview(created)
-        ui.showToast(title: review == nil ? "复盘已保存" : "复盘已更新", message: isToday ? "今日净值快照已同步。" : nil)
+        ui.showToast(title: review == nil ? T("复盘已保存") : T("复盘已更新"), message: isToday ? T("今日净值快照已同步。") : nil)
         dismiss()
     }
 }
@@ -387,7 +392,7 @@ private struct MoodPicker: View {
                     VStack(spacing: 2) {
                         Text("\(value)")
                             .font(.system(size: 11.5, weight: .semibold, design: .rounded))
-                        Text(labels[value - 1])
+                        Text(T(labels[value - 1]))
                             .font(.system(size: 8.5))
                     }
                     .foregroundStyle(selection == value ? Color.white : Color.secondary)

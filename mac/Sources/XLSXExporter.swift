@@ -72,7 +72,7 @@ enum XLSXError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .zipFailed(let code): return "生成 xlsx 压缩包失败（zip 退出码 \(code)）。"
+        case .zipFailed(let code): return T("生成 xlsx 压缩包失败（zip 退出码 %d）。", code)
         case .packageFailed(let message): return message
         }
     }
@@ -80,7 +80,7 @@ enum XLSXError: LocalizedError {
 
 enum XLSXExporter {
     static func write(sheets: [XLSheet], to outputURL: URL) throws {
-        guard !sheets.isEmpty else { throw XLSXError.packageFailed("没有可导出的工作表。") }
+        guard !sheets.isEmpty else { throw XLSXError.packageFailed(T("没有可导出的工作表。")) }
         let fm = FileManager.default
         let temp = fm.temporaryDirectory.appendingPathComponent("InvestmentReview-\(UUID().uuidString)", isDirectory: true)
         try fm.createDirectory(at: temp.appendingPathComponent("_rels"), withIntermediateDirectories: true)
@@ -114,13 +114,13 @@ enum XLSXExporter {
             throw XLSXError.zipFailed(process.terminationStatus)
         }
         guard fm.fileExists(atPath: outputURL.path) else {
-            throw XLSXError.packageFailed("导出文件没有生成。")
+            throw XLSXError.packageFailed(T("导出文件没有生成。"))
         }
     }
 
     private static func writeFile(_ content: String, to url: URL) throws {
         guard let data = content.data(using: .utf8) else {
-            throw XLSXError.packageFailed("无法编码 XML。")
+            throw XLSXError.packageFailed(T("无法编码 XML。"))
         }
         try data.write(to: url, options: .atomic)
     }
@@ -399,21 +399,21 @@ enum WorkbookBuilder {
         var heights: [Int: Double] = [:]
 
         merges.append("A1:F1")
-        rows.append([.text("Koi 300 · 数据导出", .title)] + Array(repeating: .blank(.title), count: 5))
+        rows.append([.text(T("Koi 300 · 数据导出"), .title)] + Array(repeating: .blank(.title), count: 5))
         heights[1] = 34
 
         let stamp = exportDateString()
         merges.append("A2:F2")
-        rows.append([.text("导出时间 \(stamp)　｜　数据截至 \(DateFmt.dateTimeChinese.string(from: data.lastModified))　｜　金额单位：元", .subtitle)] +
+        rows.append([.text(T("导出时间 %@　｜　数据截至 %@　｜　金额单位：元", stamp, DateFmt.dateTimeChinese.string(from: data.lastModified)), .subtitle)] +
                     Array(repeating: .blank(.subtitle), count: 5))
         heights[2] = 22
 
         rows.append(Array(repeating: .blank(), count: 6))
         merges.append("A4:F4")
-        rows.append([.text("关键指标", .section)] + Array(repeating: .blank(.section), count: 5))
+        rows.append([.text(T("关键指标"), .section)] + Array(repeating: .blank(.section), count: 5))
         heights[4] = 24
 
-        rows.append(["总投入成本", "当前总资产", "浮动盈亏", "盈亏率", "现金", "持仓市值"].map { .text($0, .header) })
+        rows.append(["总投入成本", "当前总资产", "浮动盈亏", "盈亏率", "现金", "持仓市值"].map { .text(T($0), .header) })
         heights[5] = 28
 
         rows.append([
@@ -428,9 +428,9 @@ enum WorkbookBuilder {
         rows.append(Array(repeating: .blank(), count: 6))
 
         merges.append("A8:F8")
-        rows.append([.text("账户分布", .section)] + Array(repeating: .blank(.section), count: 5))
+        rows.append([.text(T("账户分布"), .section)] + Array(repeating: .blank(.section), count: 5))
         heights[8] = 24
-        rows.append(["账户", "投入成本", "当前市值", "浮动盈亏", "盈亏率", "占总资产"].map { .text($0, .header) })
+        rows.append(["账户", "投入成本", "当前市值", "浮动盈亏", "盈亏率", "占总资产"].map { .text(T($0), .header) })
         heights[9] = 24
 
         var accountOrder: [String] = []
@@ -455,7 +455,7 @@ enum WorkbookBuilder {
             ])
         }
         rows.append([
-            .text("合计", .totalLabel),
+            .text(T("合计"), .totalLabel),
             .number(totalCost, .totalMoney),
             .number(totalValue, .totalMoney),
             .number(totalPnL, .totalMoney),
@@ -466,9 +466,9 @@ enum WorkbookBuilder {
         rows.append(Array(repeating: .blank(), count: 6))
         let categorySectionRow = rows.count + 1
         merges.append("A\(categorySectionRow):F\(categorySectionRow)")
-        rows.append([.text("资产类别", .section)] + Array(repeating: .blank(.section), count: 5))
+        rows.append([.text(T("资产类别"), .section)] + Array(repeating: .blank(.section), count: 5))
         heights[categorySectionRow] = 24
-        rows.append(["类别", "投入成本", "当前市值", "浮动盈亏", "盈亏率", "占总资产"].map { .text($0, .header) })
+        rows.append(["类别", "投入成本", "当前市值", "浮动盈亏", "盈亏率", "占总资产"].map { .text(T($0), .header) })
         heights[categorySectionRow + 1] = 24
 
         for category in AssetCategory.allCases {
@@ -478,7 +478,7 @@ enum WorkbookBuilder {
             let value = items.reduce(0) { $0 + $1.value }
             let pnl = value - cost
             rows.append([
-                .text(category.rawValue, .textCell),
+                .text(category.displayName, .textCell),
                 .number(cost, .money),
                 .number(value, .money),
                 .pnl(pnl),
@@ -487,7 +487,7 @@ enum WorkbookBuilder {
             ])
         }
         rows.append([
-            .text("合计", .totalLabel),
+            .text(T("合计"), .totalLabel),
             .number(totalCost, .totalMoney),
             .number(totalValue, .totalMoney),
             .number(totalPnL, .totalMoney),
@@ -498,13 +498,13 @@ enum WorkbookBuilder {
         rows.append(Array(repeating: .blank(), count: 6))
         let notesRow = rows.count + 1
         merges.append("A\(notesRow):F\(notesRow)")
-        rows.append([.text("说明", .section)] + Array(repeating: .blank(.section), count: 5))
+        rows.append([.text(T("说明"), .section)] + Array(repeating: .blank(.section), count: 5))
         heights[notesRow] = 24
 
         let notes = [
-            "金额单位：元；占总资产按当前总资产（含现金）计算，四舍五入可能有 ±0.1% 的误差。",
-            "持仓成本与当前市值由用户在本地应用中维护；操作记录用于复盘，不自动回写持仓成本。",
-            "本文件由“Koi 300”本地应用导出，数据只保存在这台 Mac 上。"
+            T("金额单位：元；占总资产按当前总资产（含现金）计算，四舍五入可能有 ±0.1% 的误差。"),
+            T("持仓成本与当前市值由用户在本地应用中维护；操作记录用于复盘，不自动回写持仓成本。"),
+            T("本文件由“Koi 300”本地应用导出，数据只保存在这台 Mac 上。")
         ]
         for note in notes {
             let row = rows.count + 1
@@ -514,7 +514,7 @@ enum WorkbookBuilder {
         }
 
         return XLSheet(
-            name: "概览",
+            name: T("概览"),
             columnWidths: columns,
             rows: rows,
             merges: merges,
@@ -523,20 +523,20 @@ enum WorkbookBuilder {
     }
 
     private static func holdingsSheet(data: AppData, totalCost: Double, totalValue: Double, totalPnL: Double, totalRate: Double) -> XLSheet {
-        let headers = ["账户", "类别", "代码", "名称 / 标的", "投入成本", "当前市值", "浮动盈亏", "盈亏率", "仓位占比", "数量 / 份额", "成本价 / 净值", "现价 / 净值", "我的记录 / 现状", "下一步 / 退出条件", "数据状态"]
+        let headers = ["账户", "类别", "代码", "名称 / 标的", "投入成本", "当前市值", "浮动盈亏", "盈亏率", "仓位占比", "数量 / 份额", "成本价 / 净值", "现价 / 净值", "我的记录 / 现状", "下一步 / 退出条件", "数据状态"].map { T($0) }
         let widths: [Double] = [16, 12, 10, 32, 14, 14, 14, 10, 10, 10, 12, 12, 36, 30, 12]
         var rows: [[XLCell]] = []
         let merges: [String] = ["A1:O1", "A2:O2"]
         var heights: [Int: Double] = [1: 34, 2: 22, 3: 32]
 
-        rows.append([.text("当前持仓", .title)] + Array(repeating: .blank(.title), count: 14))
-        rows.append([.text("共 \(data.assets.count) 条资产记录　｜　金额单位：元　｜　浮动盈亏按“当前市值 − 投入成本”计算", .subtitle)] + Array(repeating: .blank(.subtitle), count: 14))
+        rows.append([.text(T("当前持仓"), .title)] + Array(repeating: .blank(.title), count: 14))
+        rows.append([.text(T("共 %d 条资产记录　｜　金额单位：元　｜　浮动盈亏按“当前市值 − 投入成本”计算", data.assets.count), .subtitle)] + Array(repeating: .blank(.subtitle), count: 14))
         rows.append(headers.map { .text($0, .header) })
 
         for asset in data.assets {
             let row = [
                 XLCell.text(asset.account, .textCell),
-                XLCell.text(asset.category, .center),
+                XLCell.text(T(asset.category), .center),
                 XLCell.text(asset.code, .center),
                 XLCell.text(asset.name, .textCell),
                 XLCell.number(asset.cost, .money),
@@ -549,14 +549,14 @@ enum WorkbookBuilder {
                 XLCell.text(Fmt.optionalNumber(asset.price, digits: 4), .center),
                 XLCell.text(asset.note, .wrap),
                 XLCell.text(asset.nextStep, .wrap),
-                XLCell.text(asset.dataStatus, .center)
+                XLCell.text(T(asset.dataStatus), .center)
             ]
             rows.append(row)
             heights[rows.count] = 34
         }
 
         let totalRow = [
-            XLCell.text("合计", .totalLabel),
+            XLCell.text(T("合计"), .totalLabel),
             XLCell.blank(.totalLabel),
             XLCell.blank(.totalLabel),
             XLCell.blank(.totalLabel),
@@ -577,7 +577,7 @@ enum WorkbookBuilder {
 
         let lastDataRow = max(3, rows.count - 1)
         return XLSheet(
-            name: "当前持仓",
+            name: T("当前持仓"),
             columnWidths: widths,
             rows: rows,
             freezeRows: 3,
@@ -588,14 +588,14 @@ enum WorkbookBuilder {
     }
 
     private static func tradesSheet(data: AppData) -> XLSheet {
-        let headers = ["日期", "账户", "类别", "代码", "名称", "操作", "金额", "份额", "成交价/净值", "手续费", "已实现盈亏", "操作理由", "当时情绪", "市场 / 消息面", "结果复盘", "按计划？", "教训 / 下次"]
+        let headers = ["日期", "账户", "类别", "代码", "名称", "操作", "金额", "份额", "成交价/净值", "手续费", "已实现盈亏", "操作理由", "当时情绪", "市场 / 消息面", "结果复盘", "按计划？", "教训 / 下次"].map { T($0) }
         let widths: [Double] = [12, 16, 12, 10, 24, 10, 13, 11, 13, 11, 13, 34, 12, 30, 30, 11, 30]
         var rows: [[XLCell]] = []
         var merges: [String] = ["A1:Q1", "A2:Q2"]
         var heights: [Int: Double] = [1: 34, 2: 22, 3: 32]
 
-        rows.append([.text("操作记录", .title)] + Array(repeating: .blank(.title), count: 16))
-        rows.append([.text("一行一笔；只记操作与当时的判断，不自动计入持仓。共 \(data.trades.count) 笔。", .subtitle)] + Array(repeating: .blank(.subtitle), count: 16))
+        rows.append([.text(T("操作记录"), .title)] + Array(repeating: .blank(.title), count: 16))
+        rows.append([.text(T("一行一笔；只记操作与当时的判断，不自动计入持仓。共 %d 笔。", data.trades.count), .subtitle)] + Array(repeating: .blank(.subtitle), count: 16))
         rows.append(headers.map { .text($0, .header) })
 
         let sorted = data.trades.sorted {
@@ -604,16 +604,16 @@ enum WorkbookBuilder {
         }
         if sorted.isEmpty {
             merges.append("A4:Q4")
-            rows.append([.text("暂无操作记录。可在“操作记录”页记录第一笔买入、卖出或定投。", .caption)] + Array(repeating: .blank(.caption), count: 16))
+            rows.append([.text(T("暂无操作记录。可在“操作记录”页记录第一笔买入、卖出或定投。"), .caption)] + Array(repeating: .blank(.caption), count: 16))
         } else {
             for trade in sorted {
                 rows.append([
                     .text(trade.date, .center),
                     .text(trade.account, .textCell),
-                    .text(trade.category, .center),
+                    .text(T(trade.category), .center),
                     .text(trade.code, .center),
                     .text(trade.name, .textCell),
-                    .text(trade.action, .center),
+                    .text(T(trade.action), .center),
                     .text(trade.amount.map { Fmt.money($0) } ?? "—", .center),
                     .text(Fmt.optionalNumber(trade.shares, digits: 4), .center),
                     .text(Fmt.optionalNumber(trade.price, digits: 4), .center),
@@ -623,7 +623,7 @@ enum WorkbookBuilder {
                     .text(trade.mood, .center),
                     .text(trade.market, .wrap),
                     .text(trade.review, .wrap),
-                    .text(trade.followedPlan, .center),
+                    .text(T(trade.followedPlan), .center),
                     .text(trade.lesson, .wrap)
                 ])
                 heights[rows.count] = 38
@@ -631,7 +631,7 @@ enum WorkbookBuilder {
         }
 
         return XLSheet(
-            name: "操作记录",
+            name: T("操作记录"),
             columnWidths: widths,
             rows: rows,
             freezeRows: 3,
@@ -642,21 +642,21 @@ enum WorkbookBuilder {
     }
 
     private static func reviewsSheet(data: AppData) -> XLSheet {
-        let headers = ["日期", "心态", "情绪 / 触发", "今日操作", "市场观察", "做对的事", "做错的事 / 教训", "明日计划", "当日总资产"]
+        let headers = ["日期", "心态", "情绪 / 触发", "今日操作", "市场观察", "做对的事", "做错的事 / 教训", "明日计划", "当日总资产"].map { T($0) }
         let widths: [Double] = [12, 11, 26, 34, 30, 30, 30, 30, 14]
         var rows: [[XLCell]] = []
         var merges: [String] = ["A1:I1", "A2:I2"]
         var heights: [Int: Double] = [1: 34, 2: 22, 3: 30]
 
-        rows.append([.text("每日复盘", .title)] + Array(repeating: .blank(.title), count: 8))
-        rows.append([.text("先记事实，再记感受，最后写下一步。共 \(data.reviews.count) 条。", .subtitle)] + Array(repeating: .blank(.subtitle), count: 8))
+        rows.append([.text(T("每日复盘"), .title)] + Array(repeating: .blank(.title), count: 8))
+        rows.append([.text(T("先记事实，再记感受，最后写下一步。共 %d 条。", data.reviews.count), .subtitle)] + Array(repeating: .blank(.subtitle), count: 8))
         rows.append(headers.map { .text($0, .header) })
 
         let snapshotMap = Dictionary(uniqueKeysWithValues: data.snapshots.map { ($0.date, $0) })
         let sorted = data.reviews.sorted { $0.date > $1.date }
         if sorted.isEmpty {
             merges.append("A4:I4")
-            rows.append([.text("暂无复盘记录。每天 3 分钟，先写下今天的事实和下一步。", .caption)] + Array(repeating: .blank(.caption), count: 8))
+            rows.append([.text(T("暂无复盘记录。每天 3 分钟，先写下今天的事实和下一步。"), .caption)] + Array(repeating: .blank(.caption), count: 8))
         } else {
             for review in sorted {
                 let value = snapshotMap[review.date]?.value
@@ -676,7 +676,7 @@ enum WorkbookBuilder {
         }
 
         return XLSheet(
-            name: "每日复盘",
+            name: T("每日复盘"),
             columnWidths: widths,
             rows: rows,
             freezeRows: 3,
@@ -687,7 +687,7 @@ enum WorkbookBuilder {
     }
 
     private static func plansSheet(data: AppData) -> XLSheet {
-        let headers = ["平台", "代码", "名称", "类别", "频率", "每期金额", "月均估算", "扣款日", "起始时间", "状态", "备注"]
+        let headers = ["平台", "代码", "名称", "类别", "频率", "每期金额", "月均估算", "扣款日", "起始时间", "状态", "备注"].map { T($0) }
         let widths: [Double] = [18, 10, 24, 12, 12, 12, 12, 12, 12, 12, 36]
         var rows: [[XLCell]] = []
         var merges: [String] = ["A1:K1", "A2:K2"]
@@ -695,8 +695,8 @@ enum WorkbookBuilder {
 
         let active = data.plans.filter { $0.status == PlanStatus.active.rawValue }
         let monthly = active.reduce(0) { $0 + $1.monthlyEstimate }
-        rows.append([.text("定投计划", .title)] + Array(repeating: .blank(.title), count: 10))
-        rows.append([.text("进行中计划月均估算 \(Fmt.money(monthly)) 元　｜　每交易日按 21.75 天、每日按 30 天、每周按 52/12 周估算", .subtitle)] + Array(repeating: .blank(.subtitle), count: 10))
+        rows.append([.text(T("定投计划"), .title)] + Array(repeating: .blank(.title), count: 10))
+        rows.append([.text(T("进行中计划月均估算 %@ 元　｜　每交易日按 21.75 天、每日按 30 天、每周按 52/12 周估算", Fmt.money(monthly)), .subtitle)] + Array(repeating: .blank(.subtitle), count: 10))
         rows.append(headers.map { .text($0, .header) })
 
         let sorted = data.plans.sorted {
@@ -705,20 +705,20 @@ enum WorkbookBuilder {
         }
         if sorted.isEmpty {
             merges.append("A4:K4")
-            rows.append([.text("暂无定投计划。", .caption)] + Array(repeating: .blank(.caption), count: 10))
+            rows.append([.text(T("暂无定投计划。"), .caption)] + Array(repeating: .blank(.caption), count: 10))
         } else {
             for plan in sorted {
                 rows.append([
                     .text(plan.platform, .textCell),
                     .text(plan.code, .center),
                     .text(plan.name, .textCell),
-                    .text(plan.category, .center),
-                    .text(plan.frequency, .center),
+                    .text(T(plan.category), .center),
+                    .text(T(plan.frequency), .center),
                     .text(plan.amount.map { Fmt.money($0) } ?? "—", .center),
                     .text(plan.isCashPool ? "—" : Fmt.money(plan.monthlyEstimate), .center),
                     .text(plan.debitDay.isEmpty ? "—" : plan.debitDay, .center),
                     .text(plan.startDate.isEmpty ? "—" : plan.startDate, .center),
-                    .text(plan.status, .center),
+                    .text(T(plan.status), .center),
                     .text(plan.note, .wrap)
                 ])
                 heights[rows.count] = 32
@@ -728,11 +728,11 @@ enum WorkbookBuilder {
         let noteRow = rows.count + 2
         merges.append("A\(noteRow):K\(noteRow)")
         rows.append(Array(repeating: .blank(), count: 11))
-        rows.append([.text("资金归集计划不重复计入“月均定投”；基金当前市值统一在“当前持仓”中维护。", .caption)] + Array(repeating: .blank(.caption), count: 10))
+        rows.append([.text(T("资金归集计划不重复计入“月均定投”；基金当前市值统一在“当前持仓”中维护。"), .caption)] + Array(repeating: .blank(.caption), count: 10))
         heights[noteRow] = 22
 
         return XLSheet(
-            name: "定投计划",
+            name: T("定投计划"),
             columnWidths: widths,
             rows: rows,
             freezeRows: 3,
@@ -743,20 +743,20 @@ enum WorkbookBuilder {
     }
 
     private static func snapshotsSheet(data: AppData) -> XLSheet {
-        let headers = ["日期", "总投入", "总资产", "浮动盈亏", "现金"]
+        let headers = ["日期", "总投入", "总资产", "浮动盈亏", "现金"].map { T($0) }
         let widths: [Double] = [14, 16, 16, 16, 16]
         var rows: [[XLCell]] = []
         var merges: [String] = ["A1:E1", "A2:E2"]
         let heights: [Int: Double] = [1: 34, 2: 22, 3: 28]
 
-        rows.append([.text("净值快照", .title)] + Array(repeating: .blank(.title), count: 4))
-        rows.append([.text("记录每天的总投入、总资产和现金；用于观察净值走势。", .subtitle)] + Array(repeating: .blank(.subtitle), count: 4))
+        rows.append([.text(T("净值快照"), .title)] + Array(repeating: .blank(.title), count: 4))
+        rows.append([.text(T("记录每天的总投入、总资产和现金；用于观察净值走势。"), .subtitle)] + Array(repeating: .blank(.subtitle), count: 4))
         rows.append(headers.map { .text($0, .header) })
 
         let sorted = data.snapshots.sorted { $0.date < $1.date }
         if sorted.isEmpty {
             merges.append("A4:E4")
-            rows.append([.text("暂无快照。更新持仓后会自动记录当天数据。", .caption)] + Array(repeating: .blank(.caption), count: 4))
+            rows.append([.text(T("暂无快照。更新持仓后会自动记录当天数据。"), .caption)] + Array(repeating: .blank(.caption), count: 4))
         } else {
             for snapshot in sorted {
                 rows.append([
@@ -770,7 +770,7 @@ enum WorkbookBuilder {
         }
 
         return XLSheet(
-            name: "净值快照",
+            name: T("净值快照"),
             columnWidths: widths,
             rows: rows,
             freezeRows: 3,

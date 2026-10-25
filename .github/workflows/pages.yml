@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - "site/**"
+      - "web/**"
+      - "shell/**"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
 
@@ -30,10 +32,17 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
+      - name: Assemble bilingual site
+        run: |
+          mkdir -p _site/en _site/zh
+          cp -R site/. _site/en/
+          cp -R web/. _site/zh/
+          cp shell/index.html _site/index.html
+
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
         with:
-          path: site
+          path: _site
 
       - name: Deploy
         id: deployment

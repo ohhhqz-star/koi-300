@@ -17,9 +17,9 @@ struct SidebarView: View {
                     }
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Koi 300")
+                    Text(Brand.name)
                         .font(.system(size: 14.5, weight: .semibold))
-                    Text("每天 3 分钟")
+                    Text(T("每天 3 分钟"))
                         .font(.system(size: 10.5))
                         .foregroundStyle(.secondary)
                 }
@@ -29,7 +29,7 @@ struct SidebarView: View {
             .padding(.top, 20)
             .padding(.bottom, 22)
 
-            Text("记录")
+            Text(T("记录"))
                 .font(.system(size: 10, weight: .medium))
                 .foregroundStyle(.tertiary)
                 .tracking(0.8)
@@ -58,11 +58,13 @@ struct SidebarView: View {
                 Divider().overlay(Palette.border)
                 ThemePicker()
                 Divider().overlay(Palette.border)
+                LanguagePicker()
+                Divider().overlay(Palette.border)
                 HStack(spacing: 7) {
                     Circle()
                         .fill(Palette.loss)
                         .frame(width: 5.5, height: 5.5)
-                    Text("自动保存")
+                    Text(T("自动保存"))
                         .font(.system(size: 10.5))
                         .foregroundStyle(.secondary)
                     Spacer()
@@ -74,7 +76,7 @@ struct SidebarView: View {
                     Image(systemName: "lock.shield")
                         .font(.system(size: 10))
                         .foregroundStyle(.tertiary)
-                    Text("数据只保存在这台 Mac")
+                    Text(T("数据只保存在这台 Mac"))
                         .font(.system(size: 10))
                         .foregroundStyle(.tertiary)
                     Spacer()
@@ -86,7 +88,7 @@ struct SidebarView: View {
                             .foregroundStyle(.secondary)
                     }
                     .buttonStyle(.plain)
-                    .help("在 Finder 中打开数据文件夹")
+                    .help(T("在 Finder 中打开数据文件夹"))
                 }
             }
             .padding(.horizontal, 17)
@@ -99,7 +101,7 @@ struct SidebarView: View {
         let count = store.recordCount300
         return VStack(alignment: .leading, spacing: 5) {
             HStack(alignment: .firstTextBaseline, spacing: 5) {
-                Text("300 记录")
+                Text(T("300 记录"))
                     .font(.system(size: 10, weight: .medium))
                     .foregroundStyle(.secondary)
                 Spacer()
@@ -193,6 +195,7 @@ struct ContentView: View {
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var ui: AppUI
     @AppStorage(AppTheme.storageKey) private var themeRaw = AppTheme.warm.rawValue
+    @StateObject private var language = LanguageStore.shared
 
     private var theme: AppTheme { AppTheme(rawValue: themeRaw) ?? .warm }
 
@@ -207,7 +210,7 @@ struct ContentView: View {
                 page
             }
         }
-        .navigationTitle("Koi 300")
+        .navigationTitle(Brand.name)
         .tint(Palette.accent)
         .accentColor(Palette.accent)
         .toolbarBackground(Palette.page, for: .windowToolbar)
@@ -215,15 +218,15 @@ struct ContentView: View {
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
                 Menu {
-                    Button("写今日复盘") { ui.openTodayReview(store: store) }
-                    Button("记一笔操作…") { ui.modal = .trade(nil) }
-                    Button("新增持仓…") { ui.modal = .asset(nil) }
-                    Button("新增定投计划…") { ui.modal = .plan(nil) }
+                    Button(T("写今日复盘")) { ui.openTodayReview(store: store) }
+                    Button(T("记一笔操作…")) { ui.modal = .trade(nil) }
+                    Button(T("新增持仓…")) { ui.modal = .asset(nil) }
+                    Button(T("新增定投计划…")) { ui.modal = .plan(nil) }
                 } label: {
-                    Label("记录", systemImage: "plus")
+                    Label(T("记录"), systemImage: "plus")
                         .labelStyle(.titleAndIcon)
                 }
-                .help("新增一条记录")
+                .help(T("新增一条记录"))
 
                 Menu {
                     Button(ExportRequest.excel.menuTitle) { runExport(.excel, store: store, ui: ui) }
@@ -233,19 +236,19 @@ struct ContentView: View {
                     Button(ExportRequest.reviewsCSV.menuTitle) { runExport(.reviewsCSV, store: store, ui: ui) }
                     Divider()
                     Button(ExportRequest.backupJSON.menuTitle) { runExport(.backupJSON, store: store, ui: ui) }
-                    Button("立即创建本地备份") { runBackupNow(store: store, ui: ui) }
+                    Button(T("立即创建本地备份")) { runBackupNow(store: store, ui: ui) }
                     Divider()
-                    Button("在 Finder 中打开数据文件夹") {
+                    Button(T("在 Finder 中打开数据文件夹")) {
                         ExportService.revealDirectory(store.dataDirectory)
                     }
                 } label: {
-                    Label("导出", systemImage: "square.and.arrow.up")
+                    Label(T("导出"), systemImage: "square.and.arrow.up")
                         .labelStyle(.titleAndIcon)
                 }
-                .help("随时导出 Excel、CSV 或完整备份")
+                .help(T("随时导出 Excel、CSV 或完整备份"))
             }
         }
-        .id(themeRaw)
+        .id("\(themeRaw)-\(language.language.rawValue)")
         .sheet(item: $ui.modal) { route in
             modalContent(for: route)
                 .environmentObject(store)
@@ -270,13 +273,13 @@ struct ContentView: View {
             }
         }
         .alert(
-            "提示",
+            T("提示"),
             isPresented: Binding(
                 get: { store.errorMessage != nil },
                 set: { if !$0 { store.errorMessage = nil } }
             )
         ) {
-            Button("知道了") { store.errorMessage = nil }
+            Button(T("知道了")) { store.errorMessage = nil }
         } message: {
             Text(store.errorMessage ?? "")
         }

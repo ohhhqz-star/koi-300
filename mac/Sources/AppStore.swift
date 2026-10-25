@@ -41,7 +41,7 @@ final class AppStore: ObservableObject {
                 let stamp = DateFmt.timestamp.string(from: Date())
                 let corruptURL = directory.appendingPathComponent("data-corrupt-\(stamp).json")
                 try? fm.copyItem(at: self.dataURL, to: corruptURL)
-                loadError = "数据文件无法读取，已保留损坏副本并从初始数据恢复。"
+                loadError = T("数据文件无法读取，已保留损坏副本并从初始数据恢复。")
             }
         }
 
@@ -62,7 +62,7 @@ final class AppStore: ObservableObject {
                 try Self.write(self.data, to: self.dataURL)
             }
         } catch {
-            self.errorMessage = "无法创建数据目录：\(error.localizedDescription)"
+            self.errorMessage = T("无法创建数据目录：%@", error.localizedDescription)
         }
     }
 
@@ -105,10 +105,46 @@ final class AppStore: ObservableObject {
         }
     }
 
+    static let enumAliases: [String: String] = [
+        "Fund (OTC)": "场外基金", "OTC fund": "场外基金", "Off-exchange fund": "场外基金",
+        "Fund (ETF)": "场内基金", "ETF": "场内基金", "Exchange-traded fund": "场内基金",
+        "Stock": "股票", "Pension": "养老金", "Gold": "黄金", "Cash": "现金",
+        "Buy": "买入", "Sell": "卖出", "DCA": "定投", "Switch": "转换", "Dividend": "分红",
+        "Monthly": "每月", "Weekly": "每周", "Daily": "每日",
+        "Every trading day": "每交易日", "One-off": "一次性",
+        "Active": "进行中", "Paused": "已暂停", "Cash pool": "资金归集", "Finished": "已结束",
+        "Manual": "手工填写", "From screenshot": "截图录入",
+        "Broker screenshot": "券商截图", "Estimate": "估算", "Needs update": "待更新",
+        "Not reviewed": "待复盘", "Yes": "是", "No": "否", "Partly": "部分按计划",
+    ]
+
+    static func canonical(_ value: String) -> String { enumAliases[value] ?? value }
+
     static func decode(_ raw: Data) throws -> AppData {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
-        return try decoder.decode(AppData.self, from: raw)
+        var data = try decoder.decode(AppData.self, from: raw)
+        for index in data.assets.indices {
+            var asset = data.assets[index]
+            asset.category = canonical(asset.category)
+            asset.dataStatus = canonical(asset.dataStatus)
+            data.assets[index] = asset
+        }
+        for index in data.trades.indices {
+            var trade = data.trades[index]
+            trade.category = canonical(trade.category)
+            trade.action = canonical(trade.action)
+            trade.followedPlan = canonical(trade.followedPlan)
+            data.trades[index] = trade
+        }
+        for index in data.plans.indices {
+            var plan = data.plans[index]
+            plan.category = canonical(plan.category)
+            plan.frequency = canonical(plan.frequency)
+            plan.status = canonical(plan.status)
+            data.plans[index] = plan
+        }
+        return data
     }
 
     static func encode(_ data: AppData) throws -> Data {
@@ -319,7 +355,7 @@ final class AppStore: ObservableObject {
             try createDailyBackupIfNeeded()
             try Self.write(data, to: dataURL)
         } catch {
-            errorMessage = "保存失败：\(error.localizedDescription)"
+            errorMessage = T("保存失败：%@", error.localizedDescription)
         }
     }
 
